@@ -2,21 +2,21 @@
 const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000;
 const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
 
-// ✅ ZONAS PERMITIDAS - Definir una sola vez para consistencia
+// ✅ ZONAS PERMITIDAS - Ajustadas para el huevo real
 const WORK_ZONES = {
   // Porcentajes para la zona de trabajo (cara del huevo)
   design: {
-    x: 0.08,      // 8% margen izquierdo
-    y: 0.08,      // 8% margen superior  
-    w: 0.84,      // 84% ancho
-    h: 0.72       // 72% altura
+    x: 0.05,      // 5% margen izquierdo
+    y: 0.05,      // 5% margen superior  
+    w: 0.90,      // 90% ancho
+    h: 0.80       // 80% altura (hasta antes del área del nombre)
   },
   // Porcentajes para la zona de texto (nombre)
   text: {
-    x: 0.08,      // 8% margen izquierdo
-    y: 0.85,      // 85% desde arriba
-    w: 0.84,      // 84% ancho
-    h: 0.10       // 10% altura
+    x: 0.05,      // 5% margen izquierdo
+    y: 0.87,      // 87% desde arriba
+    w: 0.90,      // 90% ancho
+    h: 0.08       // 8% altura
   }
 };
 
@@ -384,12 +384,12 @@ function redrawEditCanvas() {
       }
     });
 
-    // ✅ OPCIONAL: Mostrar límites de zona de trabajo (quitar después)
-    /*
+    // ✅ MOSTRAR límites de zona de trabajo para debug (activado temporalmente)
     editCtx.strokeStyle = "#0066ff";
     editCtx.lineWidth = 2;
+    editCtx.setLineDash([5, 5]);
     editCtx.strokeRect(designZone.x, designZone.y, designZone.w, designZone.h);
-    */
+    editCtx.setLineDash([]);
   };
   baseImg.onerror = () => {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
