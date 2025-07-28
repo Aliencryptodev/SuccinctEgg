@@ -146,12 +146,11 @@ function loadStickerGallery(categoryArray, container) {
     img.style.margin = "3px";
     img.onclick = () => {
       addStickerToCanvas(src, false); // Sticker predefinido (no usuario)
-      redrawEditCanvas();
-      renderPreview();
     };
     container.appendChild(img);
   });
 }
+
 function loadAllGalleries() {
   loadStickerGallery(eyesStickers, eyesGallery);
   loadStickerGallery(mouthStickers, mouthGallery);
@@ -187,7 +186,6 @@ uploadSticker.addEventListener('change', e => {
       renderPreview();
     };
     img.onerror = () => {
-      // Si la imagen falla, no la agregamos
       console.warn('Sticker image failed to load and was not added.');
     };
     img.src = evt.target.result;
@@ -206,6 +204,7 @@ function fitTextToWidth(ctx, text, fontFamily, baseFontSize, maxWidth, minFontSi
   }
   return fontSize;
 }
+
 function truncateToFit(ctx, text, fontFamily, fontSize, maxWidth) {
   let newText = text;
   ctx.font = `bold ${fontSize}px "${fontFamily}"`;
@@ -228,6 +227,7 @@ function getHandleRect(sticker) {
     h: HANDLE_SIZE
   };
 }
+
 function getCloseRect(sticker) {
   // Esquina superior izquierda para cerrar
   return {
@@ -237,11 +237,71 @@ function getCloseRect(sticker) {
     h: HANDLE_SIZE
   };
 }
+
 function pointInRect(x, y, rect) {
   return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
 }
+
 function pointInSticker(x, y, sticker) {
   return x >= sticker.x && x <= sticker.x + sticker.w && y >= sticker.y && y <= sticker.y + sticker.h;
+}
+
+// --- ICONS (resize and close) ---
+function getResizeIcon() {
+  if (!getResizeIcon.img) {
+    const svg = `<svg width="22" height="22" viewBox="0 0 22 22"><polyline points="4,18 18,18 18,4" stroke="#00aaff" stroke-width="4" fill="none"/></svg>`;
+    const img = new window.Image();
+    img.src = 'data:image/svg+xml;base64,' + btoa(svg);
+    getResizeIcon.img = img;
+  }
+  return getResizeIcon.img;
+}
+
+function getCloseIcon() {
+  if (!getCloseIcon.img) {
+    const svg = `<svg width="22" height="22" viewBox="0 0 22 22"><line x1="4" y1="4" x2="18" y2="18" stroke="#ff4444" stroke-width="4"/><line x1="18" y1="4" x2="4" y2="18" stroke="#ff4444" stroke-width="4"/></svg>`;
+    const img = new window.Image();
+    img.src = 'data:image/svg+xml;base64,' + btoa(svg);
+    getCloseIcon.img = img;
+  }
+  return getCloseIcon.img;
+}
+
+function getPos(e) {
+  const rect = editCanvas.getBoundingClientRect();
+  return [
+    (e.clientX - rect.left) * editCanvas.width / rect.width,
+    (e.clientY - rect.top) * editCanvas.height / rect.height
+  ];
+}
+
+// ✅ FUNCIÓN: addStickerToCanvas con posición limitada
+function addStickerToCanvas(src, isUserUpload = false) {
+  const img = new window.Image();
+  img.onload = () => {
+    const zones = getWorkZones(editW, editH);
+    const designZone = zones.design;
+    
+    // ✅ POSICIÓN INICIAL dentro de la zona de trabajo
+    const initialX = designZone.x + Math.random() * (designZone.w - 140);
+    const initialY = designZone.y + Math.random() * (designZone.h - 140);
+    
+    placedStickers.push({
+      img: img,
+      x: Math.max(designZone.x, initialX),
+      y: Math.max(designZone.y, initialY),
+      w: 140,
+      h: 140,
+      isUserUpload
+    });
+    selectedStickerIndex = placedStickers.length - 1;
+    redrawEditCanvas();
+    renderPreview();
+  };
+  img.onerror = () => {
+    console.warn('Sticker image failed to load and was not added.');
+  };
+  img.src = src;
 }
 
 // ✅ EDITOR: Función redrawEditCanvas con límites
@@ -281,13 +341,14 @@ function redrawEditCanvas() {
     placedStickers.forEach((st, i) => {
       if (i === selectedStickerIndex && st.img && st.img.complete) {
         editCtx.save();
+        // Draw selection border
         editCtx.strokeStyle = "#00aaff";
         editCtx.lineWidth = 2.5;
         editCtx.setLineDash([8, 6]);
         editCtx.strokeRect(st.x, st.y, st.w, st.h);
         editCtx.setLineDash([]);
 
-        // Handle de redimensionar (esquina inferior derecha)
+        // Draw resize handle (bottom-right)
         editCtx.fillStyle = "#fff";
         editCtx.strokeStyle = "#00aaff";
         editCtx.lineWidth = 2;
@@ -300,9 +361,10 @@ function redrawEditCanvas() {
         );
         editCtx.fill();
         editCtx.stroke();
+        // Draw handle icon
         editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
 
-        // Handle de cerrar (esquina superior izquierda)
+        // Draw close handle (top-left)
         editCtx.fillStyle = "#fff";
         editCtx.strokeStyle = "#ff4444";
         editCtx.lineWidth = 2;
@@ -315,6 +377,7 @@ function redrawEditCanvas() {
         );
         editCtx.fill();
         editCtx.stroke();
+        // Draw X icon
         editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
 
         editCtx.restore();
@@ -333,26 +396,6 @@ function redrawEditCanvas() {
   };
 }
 
-// --- ICONS (resize and close) ---
-function getResizeIcon() {
-  if (!getResizeIcon.img) {
-    const svg = `<svg width="22" height="22" viewBox="0 0 22 22"><polyline points="4,18 18,18 18,4" stroke="#00aaff" stroke-width="4" fill="none"/></svg>`;
-    const img = new window.Image();
-    img.src = 'data:image/svg+xml;base64,' + btoa(svg);
-    getResizeIcon.img = img;
-  }
-  return getResizeIcon.img;
-}
-function getCloseIcon() {
-  if (!getCloseIcon.img) {
-    const svg = `<svg width="22" height="22" viewBox="0 0 22 22"><line x1="4" y1="4" x2="18" y2="18" stroke="#ff4444" stroke-width="4"/><line x1="18" y1="4" x2="4" y2="18" stroke="#ff4444" stroke-width="4"/></svg>`;
-    const img = new window.Image();
-    img.src = 'data:image/svg+xml;base64,' + btoa(svg);
-    getCloseIcon.img = img;
-  }
-  return getCloseIcon.img;
-}
-
 // ✅ EVENTOS: mousedown con límites
 editCanvas.addEventListener('mousedown', (e) => {
   const [x, y] = getPos(e);
@@ -362,6 +405,7 @@ editCanvas.addEventListener('mousedown', (e) => {
     return; // Ignorar clics fuera de la zona
   }
 
+  // Check stickers from top to bottom (topmost first)
   let found = false;
   for (let i = placedStickers.length - 1; i >= 0; i--) {
     const st = placedStickers[i];
@@ -394,11 +438,10 @@ editCanvas.addEventListener('mousedown', (e) => {
       break;
     }
   }
-  
   if (!found) {
     selectedStickerIndex = -1;
     redrawEditCanvas();
-    // ✅ SOLO comenzar a dibujar dentro de la zona
+    // Check if starting to draw (freehand)
     drawing = true;
     [lastX, lastY] = [x, y];
   }
@@ -409,11 +452,11 @@ editCanvas.addEventListener('mousemove', (e) => {
   const [x, y] = getPos(e);
 
   if (resizing && selectedStickerIndex !== -1) {
+    // Resize sticker
     const st = placedStickers[selectedStickerIndex];
     let newW = x - st.x - dragOffsetX;
     let newH = y - st.y - dragOffsetY;
-    
-    // Tamaño mínimo
+    // Minimum size
     newW = Math.max(40, newW);
     newH = Math.max(40, newH);
 
@@ -467,6 +510,7 @@ editCanvas.addEventListener('mouseup', () => {
   resizing = false;
   drawing = false;
 });
+
 editCanvas.addEventListener('mouseleave', () => {
   resizing = false;
   drawing = false;
@@ -481,43 +525,6 @@ clearBtn.addEventListener('click', () => {
   renderPreview();
 });
 
-// ✅ FUNCIÓN: addStickerToCanvas con posición limitada
-function addStickerToCanvas(src, isUserUpload = false) {
-  const img = new window.Image();
-  img.onload = () => {
-    const zones = getWorkZones(editW, editH);
-    const designZone = zones.design;
-    
-    // ✅ POSICIÓN INICIAL dentro de la zona de trabajo
-    const initialX = designZone.x + Math.random() * (designZone.w - 140);
-    const initialY = designZone.y + Math.random() * (designZone.h - 140);
-    
-    placedStickers.push({
-      img: img,
-      x: Math.max(designZone.x, initialX),
-      y: Math.max(designZone.y, initialY),
-      w: 140,
-      h: 140,
-      isUserUpload
-    });
-    selectedStickerIndex = placedStickers.length - 1;
-    redrawEditCanvas();
-    renderPreview();
-  };
-  img.onerror = () => {
-    console.warn('Sticker image failed to load and was not added.');
-  };
-  img.src = src;
-}
-
-function getPos(e) {
-  const rect = editCanvas.getBoundingClientRect();
-  return [
-    (e.clientX - rect.left) * editCanvas.width / rect.width,
-    (e.clientY - rect.top) * editCanvas.height / rect.height
-  ];
-}
-
 // ✅ PREVISUALIZACIÓN: renderPreview con límites
 function renderPreview() {
   const bandejaImg = new window.Image();
@@ -526,7 +533,7 @@ function renderPreview() {
     eggPreviewCtx.clearRect(0, 0, previewW, previewH);
     eggPreviewCtx.drawImage(bandejaImg, 0, 0, previewW, previewH);
 
-    // Coordenadas del huevo central en la bandeja (ya definidas)
+    // Coordenadas del huevo central en la bandeja
     const eggClipArea = {
       x: 641.2,
       y: 459.6,
@@ -660,13 +667,17 @@ function renderDownload() {
     // Stickers
     placedStickers.forEach(st => {
       if (st.img && st.img.complete && st.img.naturalWidth > 0) {
-        downloadCtx.drawImage(
-          st.img,
-          offsetX + st.x * scaleX,
-          offsetY + st.y * scaleY,
-          st.w * scaleX,
-          st.h * scaleY
-        );
+        try {
+          downloadCtx.drawImage(
+            st.img,
+            offsetX + st.x * scaleX,
+            offsetY + st.y * scaleY,
+            st.w * scaleX,
+            st.h * scaleY
+          );
+        } catch (e) {
+          console.warn("Error dibujando sticker en descarga:", e);
+        }
       }
     });
 
