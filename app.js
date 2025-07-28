@@ -1,5 +1,5 @@
 // Dimensions (ampliados para un área de edición y preview más grande y nítida)
-const editW = 716, editH = 788, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000;
+const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000;
 const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
 
 // ✅ ZONAS PERMITIDAS - Ajustadas correctamente para el huevo
