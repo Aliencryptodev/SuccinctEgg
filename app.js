@@ -1,22 +1,22 @@
-// Dimensiones definidas con precisión
-const editW = 700; // Ancho del canvas de edición
-const editH = 700; // Alto del canvas de edición
+// Dimensiones definidas con precisión según el CSS
+const editW = 400; // Ancho del canvas de edición (coincide con max-width del CSS)
+const editH = 400; // Alto del canvas de edición (coincide con aspect-ratio 1/1)
 const previewW = 1600; // Ancho de la vista previa
 const previewH = 1120; // Alto de la vista previa
 const downloadW = 1000; // Ancho de la imagen descargada
 const downloadH = 1000; // Alto de la imagen descargada
 const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Área para el nombre
 
-// Zona de diseño basada en las medidas exactas del rectángulo azul
-const ZONA_DISENO = { x: 150, y: 150, w: 400, h: 400 }; // Coordenadas y dimensiones confirmadas por la imagen
+// Zona de diseño ajustada al tamaño del canvas (sin márgenes internos)
+const ZONA_DISENO = { x: 0, y: 0, w: editW, h: editH }; // Todo el canvas es el área de edición
 
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
 window.previewBandejaImg = window.previewBandejaImg || 'assets/bandejas/bandeja_egg.png';
 
 const editCanvas = document.getElementById('editCanvas');
 const editCtx = editCanvas.getContext('2d');
-editCanvas.width = editW;
-editCanvas.height = editH;
+editCanvas.width = editW; // Ajustado a 400px según CSS
+editCanvas.height = editH; // Ajustado a 400px según CSS
 
 const brushColor = document.getElementById('brushColor');
 const brushSize = document.getElementById('brushSize');
@@ -84,8 +84,8 @@ uploadSticker.addEventListener('change', e => {
     img.onload = () => {
       placedStickers.push({
         img: img,
-        x: ZONA_DISENO.x + Math.random() * (ZONA_DISENO.w - 180),
-        y: ZONA_DISENO.y + Math.random() * (ZONA_DISENO.h - 180),
+        x: ZONA_DISENO.x + Math.random() * ZONA_DISENO.w - 180,
+        y: ZONA_DISENO.y + Math.random() * ZONA_DISENO.h - 180,
         w: Math.min(180, img.width),
         h: Math.min(180, img.height),
         isUserUpload: true
@@ -312,8 +312,8 @@ function addStickerToCanvas(src, isUserUpload = false) {
   img.onload = () => {
     placedStickers.push({
       img: img,
-      x: ZONA_DISENO.x + Math.random() * (ZONA_DISENO.w - 180),
-      y: ZONA_DISENO.y + Math.random() * (ZONA_DISENO.h - 180),
+      x: ZONA_DISENO.x + Math.random() * ZONA_DISENO.w - 180,
+      y: ZONA_DISENO.y + Math.random() * ZONA_DISENO.h - 180,
       w: 140,
       h: 140,
       isUserUpload
