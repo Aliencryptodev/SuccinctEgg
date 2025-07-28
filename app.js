@@ -6,16 +6,16 @@ const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo 
 const WORK_ZONES = {
   // Porcentajes para la zona de trabajo (cara del huevo) - CORREGIDOS
   design: {
-    x: 0.135,     // 13.5% margen izquierdo (más preciso)
-    y: 0.335,     // 33.5% margen superior (empieza más abajo)
-    w: 0.73,      // 73% ancho (más estrecho para ajustarse al huevo)
-    h: 0.45       // 45% altura (más corto, termina antes del área del nombre)
+    x: 0.21,      // 21% margen izquierdo 
+    y: 0.27,      // 27% margen superior 
+    w: 0.58,      // 58% ancho 
+    h: 0.50       // 50% altura 
   },
   // Porcentajes para la zona de texto (nombre)
   text: {
-    x: 0.135,     // 13.5% margen izquierdo (igual que design)
-    y: 0.87,      // 87% desde arriba
-    w: 0.73,      // 73% ancho (igual que design)
+    x: 0.21,      // 21% margen izquierdo (igual que design)
+    y: 0.85,      // 85% desde arriba
+    w: 0.58,      // 58% ancho (igual que design)
     h: 0.08       // 8% altura
   }
 };
