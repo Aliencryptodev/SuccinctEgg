@@ -1,8 +1,9 @@
+
 // Dimensions (ampliados para un área de edición y preview más grande y nítida)
 const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000; // 1000x1000 para descarga
 const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
 
-// Definir zona de diseño como constante global (rectángulo azul centrado en el canvas)
+// Definir zona de diseño como constante global (rectángulo azul centrado, medidas justas)
 const ZONA_DISENO = { x: 150, y: 150, w: 400, h: 400 }; // Plantilla definitiva, centrada en 700x700
 
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
