@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Succinct Eggs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Banner principal con logo y título -->
+  <header class="main-banner">
+    <div class="banner-content">
+      <img src="assets/banner1.svg" alt="Succinct Eggs Logo" class="banner-logo" />
+    </div>
+  </header>
+  <div class="main-layout">
+    <!-- Editor -->
+    <section class="editor-panel">
+      <h2>Egg Editor</h2>
+      <canvas id="editCanvas" width="1000" height="1000"></canvas>
+      <div class="controls">
+        <label for="brushColor">Brush color:</label>
+        <input type="color" id="brushColor" value="#000000">
+        <label for="brushSize">Tamaño:</label>
+        <input type="range" id="brushSize" min="2" max="30" value="6">
+        <button id="clearBtn">Clear</button>
+      </div>
+      <div class="name-section">
+        <div class="stickers-category">
+          <span class="category-title">Upload image</span>
+          <input type="file" id="uploadSticker" accept="image/png, image/jpeg" />
+        </div>
+        <label for="eggName">Name:</label>
+        <input type="text" id="eggName" maxlength="20" placeholder="Egg name">
+        <label for="fontFamily">Fonts:</label>
+        <select id="fontFamily">
+          <option value="Arial">Arial</option>
+          <option value="Comic Sans MS">Comic Sans</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Impact">Impact</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Tahoma">Tahoma</option>
+        </select>
+        <label for="fontColor">Color:</label>
+        <input type="color" id="fontColor" value="#0000ff">
+      </div>
+    </section>
+
+    <!-- Stickers -->
+    <section class="stickers-panel">
+      <h3>Stickers</h3>
+      <div class="stickers-category">
+        <span class="category-title">Eyes</span>
+        <div id="eyesGallery" class="stickers-gallery"></div>
+      </div>
+      <div class="stickers-category">
+        <span class="category-title">Mouth</span>
+        <div id="mouthGallery" class="stickers-gallery"></div>
+      </div>
+      <div class="stickers-category">
+        <span class="category-title">Nose</span>
+        <div id="noseGallery" class="stickers-gallery"></div>
+      </div>
+      <div class="stickers-category">
+        <span class="category-title">Glasses</span>
+        <div id="glassesGallery" class="stickers-gallery"></div>
+      </div>
+    </section>
+
+    <!-- Previsualización y descarga -->
+    <section class="preview-panel">
+      <h3>Preview</h3>
+      <canvas id="eggPreview" width="1600" height="1120"></canvas>
+      <div id="eggColorSelector">
+        <h4>Choose the color of the egg</h4>
+        <div id="eggColorButtons"></div>
+      </div>
+      <div class="btns-row">
+        <button id="previewBtn">Preview</button>
+        <button id="downloadBtn">Download PNG</button>
+      </div>
+    </section>
+  </div>
+  <script src="eggColors.js"></script>
+  <script src="eggColorSelector.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

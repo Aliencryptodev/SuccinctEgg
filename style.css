@@ -1,0 +1,333 @@
+body {
+  background: linear-gradient(135deg, #ffe7ba 0%, #ffa6e4 100%);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ---- Banner ---- */
+.main-banner {
+  width: 100vw;
+  background: #fff;
+  border-bottom: 4px solid #FE11C5;
+  box-shadow: 0 1.5px 12px 0 #fe11c555;
+  padding: 0;
+  margin: 0 0 22px 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 90px;
+}
+
+.banner-logo {
+  height: 100px;
+  width: auto;
+  display: block;
+}
+
+/* ---- Layout ---- */
+.main-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;    /* estira todos los sections */
+  gap: 36px;
+  padding: 40px 0;
+  max-width: 1700px;
+  margin: 0 auto;
+  min-height: 730px;      /* fuerza altura para todos */
+}
+
+/* --------- IGUALA LOS 3 CONTENEDORES --------- */
+section {
+  background: #fff6ffcc;
+  border-radius: 20px;
+  box-shadow: 0 6px 32px #fe11c516;
+  padding: 32px 20px;
+  flex: 1 1 520px;           /* todos base igual */
+  min-width: 340px;
+  max-width: 540px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+/* para que midan EXACTAMENTE igual */
+.main-layout > section {
+  height: 100%;
+}
+
+/* --------- STICKERS PANEL (CENTRO) --------- */
+.stickers-panel {
+  flex: 1.3 1 540px;
+  min-width: 360px;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+}
+
+/* Galería de gifs/stickers: alto fijo y scroll solo vertical */
+.stickers-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+}
+
+.stickers-category {
+  margin-bottom: 18px;
+  font-size: 15.5px;
+  width: 100%; /* que ocupe todo el ancho disponible */
+}
+
+.category-title {
+  font-weight: bold;
+  color: #FE11C5;
+  display: block;
+  margin-bottom: 5px;
+  padding-left: 4px;
+}
+
+.stickers-gallery {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 6 stickers por fila, ajusta si quieres 5 */
+  gap: 10px;
+  width: 100%;              /* ocupa todo el ancho del panel central */
+  max-width: 100%;
+  height: 100px;             /* suficiente para 2 filas (ajusta aquí) */
+  overflow-y: auto;
+  background: #fff8;
+  border-radius: 8px;
+  padding: 6px 0 4px 0;
+}
+
+.stickers-gallery img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+  transition: border 0.2s, background 0.2s;
+}
+.stickers-gallery img:hover {
+  border: 2px solid #FE11C5;
+  background: #ffe4fa;
+}
+
+/* --------- FIN GIFS Y GALERÍA DE STICKERS --------- */
+
+h2, h3 {
+  color: #FE11C5;
+  font-weight: bold;
+  margin-bottom: 18px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.editor-panel, .preview-panel {
+  flex: 1 1 520px;
+  min-width: 340px;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+}
+
+.editor-panel #editCanvas {
+  background: #fff;
+  border: 2px solid #FE11C5;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+  aspect-ratio: 1 / 1;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+#clearBtn {
+  background: #FE11C5;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 5px 18px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+  font-size: 1em;
+}
+#clearBtn:hover {
+  background: #c70d9a;
+}
+
+.name-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 7px;
+  margin: 16px 0 0 0;
+  font-size: 16px;
+  padding: 1px 0;
+  justify-content: center;
+}
+
+#eggName {
+  width: 120px;
+  padding: 2px 6px;
+  border: 1.2px solid #FE11C533;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+#fontFamily {
+  font-size: 1em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1.2px solid #FE11C533;
+}
+
+#fontColor, #brushColor {
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+#fontSize, #brushSize {
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+.preview-panel h3 {
+  margin-bottom: 15px;
+}
+
+#eggPreview {
+  background: #fff;
+  border: 2px solid #FE11C5;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 1600px;
+  height: auto;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 12px #fe11c522;
+  aspect-ratio: 1600/1120;
+}
+
+.btns-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  justify-content: center;
+}
+.btns-row button {
+  background: #FE11C5;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  transition: background 0.18s;
+  margin-bottom: 5px;
+}
+.btns-row button:hover {
+  background: #c70d9a;
+}
+
+/* Responsive para tablets/móviles */
+@media (max-width: 1100px) {
+  .main-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 0;
+    min-height: 0;
+  }
+  section {
+    min-width: 0;
+    max-width: 98vw;
+    width: 98vw;
+    margin-bottom: 0;
+    min-height: 400px;
+    height: auto;
+  }
+  .stickers-gallery {
+    max-width: 95vw;
+  }
+  #editCanvas, #eggPreview {
+    width: 100vw;
+    max-width: 98vw;
+    height: auto;
+  }
+}
+
+body, input, select, button {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Selector de color de huevo ---- */
+#eggColorSelector {
+  margin-bottom: 18px;
+  text-align: center;
+}
+#eggColorSelector h4 {
+  margin-bottom: 6px;
+  font-size: 1.08em;
+  color: #FE11C5;
+  letter-spacing: 0.5px;
+}
+#eggColorButtons {
+  display: flex;
+  gap: 11px;
+  justify-content: center;
+}
+.egg-color-btn {
+  border: 2px solid #aaa;
+  background: white;
+  padding: 3px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: border 0.2s;
+  outline: none;
+  box-shadow: none;
+}
+.egg-color-btn.selected, .egg-color-btn:focus {
+  border: 2.5px solid #FE11C5;
+}
+.egg-color-btn img {
+  display: block;
+  width: 38px;
+  height: 38px;
+  pointer-events: none;
+}
