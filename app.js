@@ -18,9 +18,12 @@ let drawCtx = drawCanvas ? drawCanvas.getContext('2d') : null;
 if (!drawCanvas) {
   drawCanvas = document.createElement('canvas');
   drawCanvas.id = 'drawCanvas';
-  drawCanvas.width = editW;
-  drawCanvas.height = editH;
+  drawCanvas.width = ZONA_DISENO.w; // Limitar al tamaño del rectángulo azul
+  drawCanvas.height = ZONA_DISENO.h; // Limitar al tamaño del rectángulo azul
   drawCanvas.style.display = "none";
+  drawCanvas.style.position = "absolute";
+  drawCanvas.style.left = ZONA_DISENO.x + "px";
+  drawCanvas.style.top = ZONA_DISENO.y + "px";
   document.body.appendChild(drawCanvas);
   drawCtx = drawCanvas.getContext('2d');
 }
@@ -106,8 +109,8 @@ uploadSticker.addEventListener('change', e => {
     img.onload = () => {
       placedStickers.push({
         img: img,
-        x: ZONA_DISENO.x + Math.random() * (ZONA_DISENO.w - 180),
-        y: ZONA_DISENO.y + Math.random() * (ZONA_DISENO.h - 180),
+        x: 0 + Math.random() * (ZONA_DISENO.w - 180), // Coordenadas relativas al drawCanvas
+        y: 0 + Math.random() * (ZONA_DISENO.h - 180),
         w: Math.min(180, img.width),
         h: Math.min(180, img.height),
         isUserUpload: true // MARCA como imagen subida por usuario
@@ -185,21 +188,21 @@ function redrawEditCanvas() {
     editCtx.rect(ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h);
     editCtx.clip();
 
-    // Dibujar dibujo a mano alzada
-    editCtx.drawImage(drawCanvas, 0, 0);
+    // Dibujar dibujo a mano alzada (posicionado en ZONA_DISENO)
+    editCtx.drawImage(drawCanvas, ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h, ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h);
 
-    // Dibujar pegatinas
+    // Dibujar pegatinas (ajustadas a las coordenadas relativas de drawCanvas)
     placedStickers.forEach((st, i) => {
       if (st.img && st.img.complete && typeof st.img.naturalWidth === "number" && st.img.naturalWidth > 0) {
         try {
-          editCtx.drawImage(st.img, st.x, st.y, st.w, st.h);
+          editCtx.drawImage(st.img, st.x + ZONA_DISENO.x, st.y + ZONA_DISENO.y, st.w, st.h);
 
           if (i === selectedStickerIndex) {
             editCtx.save();
             editCtx.strokeStyle = "#00aaff";
             editCtx.lineWidth = 2.5;
             editCtx.setLineDash([8, 6]);
-            editCtx.strokeRect(st.x, st.y, st.w, st.h);
+            editCtx.strokeRect(st.x + ZONA_DISENO.x, st.y + ZONA_DISENO.y, st.w, st.h);
             editCtx.setLineDash([]);
 
             // Dibujar handle de redimensionar
@@ -207,20 +210,20 @@ function redrawEditCanvas() {
             editCtx.strokeStyle = "#00aaff";
             editCtx.lineWidth = 2;
             editCtx.beginPath();
-            editCtx.rect(st.x + st.w - HANDLE_SIZE / 2, st.y + st.h - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+            editCtx.rect(st.x + ZONA_DISENO.x + st.w - HANDLE_SIZE / 2, st.y + ZONA_DISENO.y + st.h - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
             editCtx.fill();
             editCtx.stroke();
-            editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
+            editCtx.drawImage(getResizeIcon(), st.x + ZONA_DISENO.x + st.w - HANDLE_SIZE / 2 + 5, st.y + ZONA_DISENO.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
 
             // Dibujar handle de cerrar
             editCtx.fillStyle = "#fff";
             editCtx.strokeStyle = "#ff4444";
             editCtx.lineWidth = 2;
             editCtx.beginPath();
-            editCtx.rect(st.x - HANDLE_SIZE / 2, st.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+            editCtx.rect(st.x + ZONA_DISENO.x - HANDLE_SIZE / 2, st.y + ZONA_DISENO.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
             editCtx.fill();
             editCtx.stroke();
-            editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
+            editCtx.drawImage(getCloseIcon(), st.x + ZONA_DISENO.x - HANDLE_SIZE / 2 + 5, st.y + ZONA_DISENO.y - HANDLE_SIZE / 2 + 5, 22, 22);
 
             editCtx.restore();
           }
@@ -261,18 +264,22 @@ function getCloseIcon() {
 editCanvas.addEventListener('mousedown', (e) => {
   const [x, y] = getPos(e);
 
+  // Ajustar coordenadas al área de ZONA_DISENO
+  const adjustedX = x - ZONA_DISENO.x;
+  const adjustedY = y - ZONA_DISENO.y;
+
   let found = false;
   for (let i = placedStickers.length - 1; i >= 0; i--) {
     const st = placedStickers[i];
     if (i === selectedStickerIndex) {
-      if (pointInRect(x, y, getHandleRect(st))) {
+      if (pointInRect(adjustedX, adjustedY, getHandleRect(st))) {
         resizing = true;
-        dragOffsetX = x - (st.x + st.w);
-        dragOffsetY = y - (st.y + st.h);
+        dragOffsetX = adjustedX - (st.x + st.w);
+        dragOffsetY = adjustedY - (st.y + st.h);
         found = true;
         break;
       }
-      if (pointInRect(x, y, getCloseRect(st))) {
+      if (pointInRect(adjustedX, adjustedY, getCloseRect(st))) {
         placedStickers.splice(i, 1);
         selectedStickerIndex = -1;
         redrawEditCanvas();
@@ -281,33 +288,35 @@ editCanvas.addEventListener('mousedown', (e) => {
         break;
       }
     }
-    if (pointInSticker(x, y, st)) {
+    if (pointInSticker(adjustedX, adjustedY, st)) {
       selectedStickerIndex = i;
-      dragOffsetX = x - st.x;
-      dragOffsetY = y - st.y;
+      dragOffsetX = adjustedX - st.x;
+      dragOffsetY = adjustedY - st.y;
       resizing = false;
       found = true;
       redrawEditCanvas();
       break;
     }
   }
-  if (!found) {
+  if (!found && pointInRect(x, y, ZONA_DISENO)) {
     selectedStickerIndex = -1;
     redrawEditCanvas();
     drawing = true;
-    [lastX, lastY] = [x, y];
+    [lastX, lastY] = [adjustedX, adjustedY];
   }
 });
 
 editCanvas.addEventListener('mousemove', (e) => {
   const [x, y] = getPos(e);
+  const adjustedX = x - ZONA_DISENO.x;
+  const adjustedY = y - ZONA_DISENO.y;
 
   if (resizing && selectedStickerIndex !== -1) {
     const st = placedStickers[selectedStickerIndex];
-    let newW = x - st.x - dragOffsetX;
-    let newH = y - st.y - dragOffsetY;
-    newW = Math.max(40, Math.min(newW, ZONA_DISENO.x + ZONA_DISENO.w - st.x));
-    newH = Math.max(40, Math.min(newH, ZONA_DISENO.y + ZONA_DISENO.h - st.y));
+    let newW = adjustedX - st.x - dragOffsetX;
+    let newH = adjustedY - st.y - dragOffsetY;
+    newW = Math.max(40, Math.min(newW, ZONA_DISENO.w - st.x));
+    newH = Math.max(40, Math.min(newH, ZONA_DISENO.h - st.y));
     st.w = newW;
     st.h = newH;
     redrawEditCanvas();
@@ -315,15 +324,15 @@ editCanvas.addEventListener('mousemove', (e) => {
     return;
   }
 
-  if (drawing) {
+  if (drawing && pointInRect(x, y, ZONA_DISENO)) {
     drawCtx.strokeStyle = brushColor.value;
     drawCtx.lineWidth = brushSize.value;
     drawCtx.lineCap = "round";
     drawCtx.lineJoin = "round";
     drawCtx.beginPath();
     drawCtx.moveTo(lastX, lastY);
-    const clippedX = Math.max(ZONA_DISENO.x, Math.min(x, ZONA_DISENO.x + ZONA_DISENO.w));
-    const clippedY = Math.max(ZONA_DISENO.y, Math.min(y, ZONA_DISENO.y + ZONA_DISENO.h));
+    const clippedX = Math.max(0, Math.min(adjustedX, ZONA_DISENO.w));
+    const clippedY = Math.max(0, Math.min(adjustedY, ZONA_DISENO.h));
     drawCtx.lineTo(clippedX, clippedY);
     drawCtx.stroke();
     [lastX, lastY] = [clippedX, clippedY];
@@ -332,10 +341,10 @@ editCanvas.addEventListener('mousemove', (e) => {
     return;
   }
 
-  if (selectedStickerIndex !== -1 && (e.buttons & 1) && !resizing) {
+  if (selectedStickerIndex !== -1 && (e.buttons & 1) && !resizing && pointInRect(x, y, ZONA_DISENO)) {
     const st = placedStickers[selectedStickerIndex];
-    st.x = Math.max(ZONA_DISENO.x, Math.min(x - dragOffsetX, ZONA_DISENO.x + ZONA_DISENO.w - st.w));
-    st.y = Math.max(ZONA_DISENO.y, Math.min(y - dragOffsetY, ZONA_DISENO.y + ZONA_DISENO.h - st.h));
+    st.x = Math.max(0, Math.min(adjustedX - dragOffsetX, ZONA_DISENO.w - st.w));
+    st.y = Math.max(0, Math.min(adjustedY - dragOffsetY, ZONA_DISENO.h - st.h));
     redrawEditCanvas();
     renderPreview();
   }
@@ -365,8 +374,8 @@ function addStickerToCanvas(src, isUserUpload = false) {
   img.onload = () => {
     placedStickers.push({
       img: img,
-      x: ZONA_DISENO.x + Math.random() * (ZONA_DISENO.w - 180),
-      y: ZONA_DISENO.y + Math.random() * (ZONA_DISENO.h - 180),
+      x: 0 + Math.random() * (ZONA_DISENO.w - 180), // Coordenadas relativas al drawCanvas
+      y: 0 + Math.random() * (ZONA_DISENO.h - 180),
       w: 140,
       h: 140,
       isUserUpload
@@ -416,8 +425,8 @@ function renderPreview() {
         try {
           eggPreviewCtx.drawImage(
             st.img,
-            st.x * (eggClipArea.w / editW) + eggClipArea.x,
-            st.y * (eggClipArea.h / editH) + eggClipArea.y,
+            (st.x + ZONA_DISENO.x) * (eggClipArea.w / editW) + eggClipArea.x,
+            (st.y + ZONA_DISENO.y) * (eggClipArea.h / editH) + eggClipArea.y,
             st.w * (eggClipArea.w / editW),
             st.h * (eggClipArea.h / editH)
           );
@@ -481,7 +490,7 @@ function renderDownload() {
     const designScale = downloadW / ZONA_DISENO.w; // Escala de 400 a 1000
     downloadCtx.drawImage(
       drawCanvas,
-      ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h, // Copiar solo el área de diseño
+      0, 0, ZONA_DISENO.w, ZONA_DISENO.h, // Copiar solo el área de diseño
       0, 0, downloadW, downloadH // Escalar al tamaño de descarga
     );
 
@@ -490,8 +499,8 @@ function renderDownload() {
       if (st.img && st.img.complete && st.img.naturalWidth > 0) {
         downloadCtx.drawImage(
           st.img,
-          (st.x - ZONA_DISENO.x) * designScale, // Ajustar coordenadas relativas
-          (st.y - ZONA_DISENO.y) * designScale,
+          st.x * designScale, // Coordenadas relativas al drawCanvas
+          st.y * designScale,
           st.w * designScale,
           st.h * designScale
         );
