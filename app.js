@@ -2,6 +2,24 @@
 const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000;
 const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
 
+// ✅ ZONAS PERMITIDAS - Definir una sola vez para consistencia
+const WORK_ZONES = {
+  // Porcentajes para la zona de trabajo (cara del huevo)
+  design: {
+    x: 0.08,      // 8% margen izquierdo
+    y: 0.08,      // 8% margen superior  
+    w: 0.84,      // 84% ancho
+    h: 0.72       // 72% altura
+  },
+  // Porcentajes para la zona de texto (nombre)
+  text: {
+    x: 0.08,      // 8% margen izquierdo
+    y: 0.85,      // 85% desde arriba
+    w: 0.84,      // 84% ancho
+    h: 0.10       // 10% altura
+  }
+};
+
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
 window.previewBandejaImg = window.previewBandejaImg || 'assets/bandejas/bandeja_egg.png';
 
@@ -56,6 +74,53 @@ let dragOffsetX = 0, dragOffsetY = 0;
 let resizing = false;
 const HANDLE_SIZE = 32; // Más grande para fácil manejo
 
+// ✅ FUNCIÓN: Obtener coordenadas reales de las zonas
+function getWorkZones(canvasWidth, canvasHeight) {
+  return {
+    design: {
+      x: Math.round(canvasWidth * WORK_ZONES.design.x),
+      y: Math.round(canvasHeight * WORK_ZONES.design.y),
+      w: Math.round(canvasWidth * WORK_ZONES.design.w),
+      h: Math.round(canvasHeight * WORK_ZONES.design.h)
+    },
+    text: {
+      x: Math.round(canvasWidth * WORK_ZONES.text.x),
+      y: Math.round(canvasHeight * WORK_ZONES.text.y),
+      w: Math.round(canvasWidth * WORK_ZONES.text.w),
+      h: Math.round(canvasHeight * WORK_ZONES.text.h)
+    }
+  };
+}
+
+// ✅ FUNCIÓN: Verificar si un punto está dentro de la zona de trabajo
+function isPointInWorkZone(x, y) {
+  const zones = getWorkZones(editW, editH);
+  const designZone = zones.design;
+  
+  return x >= designZone.x && 
+         x <= designZone.x + designZone.w && 
+         y >= designZone.y && 
+         y <= designZone.y + designZone.h;
+}
+
+// ✅ FUNCIÓN: Limitar coordenadas a la zona de trabajo
+function constrainToWorkZone(x, y, width = 0, height = 0) {
+  const zones = getWorkZones(editW, editH);
+  const designZone = zones.design;
+  
+  const constrainedX = Math.max(
+    designZone.x,
+    Math.min(designZone.x + designZone.w - width, x)
+  );
+  
+  const constrainedY = Math.max(
+    designZone.y,
+    Math.min(designZone.y + designZone.h - height, y)
+  );
+  
+  return [constrainedX, constrainedY];
+}
+
 // --- Inputs events ---
 fontFamily.addEventListener('change', () => {
   redrawEditCanvas();
@@ -93,6 +158,7 @@ function loadAllGalleries() {
   loadStickerGallery(noseStickers, noseGallery);
   loadStickerGallery(glassesStickers, glassesGallery);
 }
+
 // --- CARGA DE STICKER DE USUARIO ---
 uploadSticker.addEventListener('change', e => {
   const file = e.target.files[0];
@@ -101,10 +167,17 @@ uploadSticker.addEventListener('change', e => {
   reader.onload = function(evt) {
     const img = new window.Image();
     img.onload = () => {
+      const zones = getWorkZones(editW, editH);
+      const designZone = zones.design;
+      
+      // ✅ POSICIÓN INICIAL dentro de la zona de trabajo
+      const initialX = designZone.x + Math.random() * (designZone.w - 180);
+      const initialY = designZone.y + Math.random() * (designZone.h - 180);
+      
       placedStickers.push({
         img: img,
-        x: 100 + Math.random() * 180,
-        y: 100 + Math.random() * 180,
+        x: Math.max(designZone.x, initialX),
+        y: Math.max(designZone.y, initialY),
         w: Math.min(180, img.width),
         h: Math.min(180, img.height),
         isUserUpload: true // MARCA como imagen subida por usuario
@@ -171,7 +244,7 @@ function pointInSticker(x, y, sticker) {
   return x >= sticker.x && x <= sticker.x + sticker.w && y >= sticker.y && y <= sticker.y + sticker.h;
 }
 
-// Draw everything on the edit canvas (left side)
+// ✅ EDITOR: Función redrawEditCanvas con límites
 function redrawEditCanvas() {
   const baseImg = new window.Image();
   baseImg.src = window.editorBaseImg;
@@ -179,71 +252,81 @@ function redrawEditCanvas() {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
     editCtx.drawImage(baseImg, 0, 0, editCanvas.width, editCanvas.height);
 
-    // Freehand drawing
+    const zones = getWorkZones(editW, editH);
+    const designZone = zones.design;
+
+    // ✅ APLICAR CLIPPING a la zona de trabajo
+    editCtx.save();
+    editCtx.beginPath();
+    editCtx.rect(designZone.x, designZone.y, designZone.w, designZone.h);
+    editCtx.clip();
+
+    // Dibujo libre (solo dentro de la zona)
     editCtx.drawImage(drawCanvas, 0, 0);
 
-    // Stickers
+    // Stickers (solo dentro de la zona)
     placedStickers.forEach((st, i) => {
-      if (
-        st.img &&
-        st.img.complete &&
-        typeof st.img.naturalWidth === "number" &&
-        st.img.naturalWidth > 0
-      ) {
+      if (st.img && st.img.complete && st.img.naturalWidth > 0) {
         try {
           editCtx.drawImage(st.img, st.x, st.y, st.w, st.h);
-
-          if (i === selectedStickerIndex) {
-            // Draw selection border
-            editCtx.save();
-            editCtx.strokeStyle = "#00aaff";
-            editCtx.lineWidth = 2.5;
-            editCtx.setLineDash([8, 6]);
-            editCtx.strokeRect(st.x, st.y, st.w, st.h);
-            editCtx.setLineDash([]);
-
-            // Draw resize handle (bottom-right)
-            editCtx.fillStyle = "#fff";
-            editCtx.strokeStyle = "#00aaff";
-            editCtx.lineWidth = 2;
-            editCtx.beginPath();
-            editCtx.rect(
-              st.x + st.w - HANDLE_SIZE / 2,
-              st.y + st.h - HANDLE_SIZE / 2,
-              HANDLE_SIZE,
-              HANDLE_SIZE
-            );
-            editCtx.fill();
-            editCtx.stroke();
-            // Draw handle icon
-            editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
-
-            // Draw close handle (top-left)
-            editCtx.fillStyle = "#fff";
-            editCtx.strokeStyle = "#ff4444";
-            editCtx.lineWidth = 2;
-            editCtx.beginPath();
-            editCtx.rect(
-              st.x - HANDLE_SIZE / 2,
-              st.y - HANDLE_SIZE / 2,
-              HANDLE_SIZE,
-              HANDLE_SIZE
-            );
-            editCtx.fill();
-            editCtx.stroke();
-            // Draw X icon
-            editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
-
-            editCtx.restore();
-          }
         } catch (e) {
-          // Si drawImage falla, no hacemos nada
-          console.warn("No se pudo dibujar un sticker (broken image).", e);
+          console.warn("Error dibujando sticker:", e);
         }
       }
     });
 
-    
+    editCtx.restore();
+
+    // ✅ DIBUJAR HANDLES de selección (FUERA del clipping)
+    placedStickers.forEach((st, i) => {
+      if (i === selectedStickerIndex && st.img && st.img.complete) {
+        editCtx.save();
+        editCtx.strokeStyle = "#00aaff";
+        editCtx.lineWidth = 2.5;
+        editCtx.setLineDash([8, 6]);
+        editCtx.strokeRect(st.x, st.y, st.w, st.h);
+        editCtx.setLineDash([]);
+
+        // Handle de redimensionar (esquina inferior derecha)
+        editCtx.fillStyle = "#fff";
+        editCtx.strokeStyle = "#00aaff";
+        editCtx.lineWidth = 2;
+        editCtx.beginPath();
+        editCtx.rect(
+          st.x + st.w - HANDLE_SIZE / 2,
+          st.y + st.h - HANDLE_SIZE / 2,
+          HANDLE_SIZE,
+          HANDLE_SIZE
+        );
+        editCtx.fill();
+        editCtx.stroke();
+        editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
+
+        // Handle de cerrar (esquina superior izquierda)
+        editCtx.fillStyle = "#fff";
+        editCtx.strokeStyle = "#ff4444";
+        editCtx.lineWidth = 2;
+        editCtx.beginPath();
+        editCtx.rect(
+          st.x - HANDLE_SIZE / 2,
+          st.y - HANDLE_SIZE / 2,
+          HANDLE_SIZE,
+          HANDLE_SIZE
+        );
+        editCtx.fill();
+        editCtx.stroke();
+        editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
+
+        editCtx.restore();
+      }
+    });
+
+    // ✅ OPCIONAL: Mostrar límites de zona de trabajo (quitar después)
+    /*
+    editCtx.strokeStyle = "#0066ff";
+    editCtx.lineWidth = 2;
+    editCtx.strokeRect(designZone.x, designZone.y, designZone.w, designZone.h);
+    */
   };
   baseImg.onerror = () => {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
@@ -270,11 +353,15 @@ function getCloseIcon() {
   return getCloseIcon.img;
 }
 
-// --- STICKER INTERACTION ---
+// ✅ EVENTOS: mousedown con límites
 editCanvas.addEventListener('mousedown', (e) => {
   const [x, y] = getPos(e);
 
-  // Check stickers from top to bottom (topmost first)
+  // ✅ SOLO permitir interacción dentro de la zona de trabajo
+  if (!isPointInWorkZone(x, y)) {
+    return; // Ignorar clics fuera de la zona
+  }
+
   let found = false;
   for (let i = placedStickers.length - 1; i >= 0; i--) {
     const st = placedStickers[i];
@@ -307,32 +394,35 @@ editCanvas.addEventListener('mousedown', (e) => {
       break;
     }
   }
+  
   if (!found) {
     selectedStickerIndex = -1;
     redrawEditCanvas();
-    // Check if starting to draw (freehand)
+    // ✅ SOLO comenzar a dibujar dentro de la zona
     drawing = true;
     [lastX, lastY] = [x, y];
   }
 });
 
+// ✅ EVENTOS: mousemove con límites
 editCanvas.addEventListener('mousemove', (e) => {
   const [x, y] = getPos(e);
 
   if (resizing && selectedStickerIndex !== -1) {
-    // Resize sticker
     const st = placedStickers[selectedStickerIndex];
     let newW = x - st.x - dragOffsetX;
     let newH = y - st.y - dragOffsetY;
-    // Minimum size
+    
+    // Tamaño mínimo
     newW = Math.max(40, newW);
     newH = Math.max(40, newH);
 
-    // Solo limitar si NO es imagen subida por el usuario
-    if (!st.isUserUpload) {
-      newW = Math.min(editW - st.x, newW);
-      newH = Math.min(editH - st.y, newH);
-    }
+    // ✅ LIMITAR redimensionado a la zona de trabajo
+    const zones = getWorkZones(editW, editH);
+    const designZone = zones.design;
+    
+    newW = Math.min(designZone.x + designZone.w - st.x, newW);
+    newH = Math.min(designZone.y + designZone.h - st.y, newH);
 
     st.w = newW;
     st.h = newH;
@@ -342,33 +432,32 @@ editCanvas.addEventListener('mousemove', (e) => {
   }
 
   if (drawing) {
-    // Freehand drawing mode
-    drawCtx.strokeStyle = brushColor.value;
-    drawCtx.lineWidth = brushSize.value;
-    drawCtx.lineCap = "round";
-    drawCtx.lineJoin = "round";
-    drawCtx.beginPath();
-    drawCtx.moveTo(lastX, lastY);
-    drawCtx.lineTo(x, y);
-    drawCtx.stroke();
+    // ✅ SOLO dibujar dentro de la zona de trabajo
+    if (isPointInWorkZone(x, y) && isPointInWorkZone(lastX, lastY)) {
+      drawCtx.strokeStyle = brushColor.value;
+      drawCtx.lineWidth = brushSize.value;
+      drawCtx.lineCap = "round";
+      drawCtx.lineJoin = "round";
+      drawCtx.beginPath();
+      drawCtx.moveTo(lastX, lastY);
+      drawCtx.lineTo(x, y);
+      drawCtx.stroke();
+      redrawEditCanvas();
+      renderPreview();
+    }
     [lastX, lastY] = [x, y];
-    redrawEditCanvas();
-    renderPreview();
     return;
   }
 
-  // Move sticker
+  // ✅ MOVER sticker con límites
   if (selectedStickerIndex !== -1 && (e.buttons & 1) && !resizing) {
     const st = placedStickers[selectedStickerIndex];
-    st.x = x - dragOffsetX;
-    st.y = y - dragOffsetY;
-
-    // Solo limitar si NO es imagen subida por el usuario
-    if (!st.isUserUpload) {
-      st.x = Math.max(0, Math.min(editW - st.w, st.x));
-      st.y = Math.max(0, Math.min(editH - st.h, st.y));
-    }
-
+    const newX = x - dragOffsetX;
+    const newY = y - dragOffsetY;
+    
+    // ✅ CONSTRAÑIR posición a la zona de trabajo
+    [st.x, st.y] = constrainToWorkZone(newX, newY, st.w, st.h);
+    
     redrawEditCanvas();
     renderPreview();
   }
@@ -392,14 +481,21 @@ clearBtn.addEventListener('click', () => {
   renderPreview();
 });
 
-// Cambiada para aceptar stickers predefinidos y distinguirlos de los del usuario
+// ✅ FUNCIÓN: addStickerToCanvas con posición limitada
 function addStickerToCanvas(src, isUserUpload = false) {
   const img = new window.Image();
   img.onload = () => {
+    const zones = getWorkZones(editW, editH);
+    const designZone = zones.design;
+    
+    // ✅ POSICIÓN INICIAL dentro de la zona de trabajo
+    const initialX = designZone.x + Math.random() * (designZone.w - 140);
+    const initialY = designZone.y + Math.random() * (designZone.h - 140);
+    
     placedStickers.push({
       img: img,
-      x: 100 + Math.random() * 180,
-      y: 100 + Math.random() * 180,
+      x: Math.max(designZone.x, initialX),
+      y: Math.max(designZone.y, initialY),
       w: 140,
       h: 140,
       isUserUpload
@@ -409,7 +505,6 @@ function addStickerToCanvas(src, isUserUpload = false) {
     renderPreview();
   };
   img.onerror = () => {
-    // Si la imagen falla, no la agregamos
     console.warn('Sticker image failed to load and was not added.');
   };
   img.src = src;
@@ -423,6 +518,7 @@ function getPos(e) {
   ];
 }
 
+// ✅ PREVISUALIZACIÓN: renderPreview con límites
 function renderPreview() {
   const bandejaImg = new window.Image();
   bandejaImg.src = window.previewBandejaImg;
@@ -430,7 +526,7 @@ function renderPreview() {
     eggPreviewCtx.clearRect(0, 0, previewW, previewH);
     eggPreviewCtx.drawImage(bandejaImg, 0, 0, previewW, previewH);
 
-    // Coordenadas del huevo central en la bandeja
+    // Coordenadas del huevo central en la bandeja (ya definidas)
     const eggClipArea = {
       x: 641.2,
       y: 459.6,
@@ -438,34 +534,50 @@ function renderPreview() {
       h: 329.4
     };
 
-    // --- DIBUJO LIBRE ---
+    // ✅ APLICAR CLIPPING también en preview
     eggPreviewCtx.save();
+    eggPreviewCtx.beginPath();
+    eggPreviewCtx.ellipse(
+      eggClipArea.x + eggClipArea.w/2, 
+      eggClipArea.y + eggClipArea.h/2, 
+      eggClipArea.w/2, 
+      eggClipArea.h/2, 
+      0, 0, 2 * Math.PI
+    );
+    eggPreviewCtx.clip();
+
+    // Calcular escalas para mapear desde zona de trabajo a preview
+    const zones = getWorkZones(editW, editH);
+    const designZone = zones.design;
+    
+    const scaleX = eggClipArea.w / designZone.w;
+    const scaleY = eggClipArea.h / designZone.h;
+    const offsetX = eggClipArea.x - (designZone.x * scaleX);
+    const offsetY = eggClipArea.y - (designZone.y * scaleY);
+
+    // --- DIBUJO LIBRE ---
     eggPreviewCtx.drawImage(
       drawCanvas,
-      0, 0, drawCanvas.width, drawCanvas.height,
+      designZone.x, designZone.y, designZone.w, designZone.h,
       eggClipArea.x, eggClipArea.y, eggClipArea.w, eggClipArea.h
     );
-    eggPreviewCtx.restore();
 
     // --- STICKERS ---
     placedStickers.forEach(st => {
-      if (
-        st.img &&
-        st.img.complete &&
-        typeof st.img.naturalWidth === "number" &&
-        st.img.naturalWidth > 0
-      ) {
+      if (st.img && st.img.complete && st.img.naturalWidth > 0) {
         try {
           eggPreviewCtx.drawImage(
             st.img,
-            st.x * (eggClipArea.w / editW) + eggClipArea.x,
-            st.y * (eggClipArea.h / editH) + eggClipArea.y,
-            st.w * (eggClipArea.w / editW),
-            st.h * (eggClipArea.h / editH)
+            offsetX + st.x * scaleX,
+            offsetY + st.y * scaleY,
+            st.w * scaleX,
+            st.h * scaleY
           );
         } catch (e) {}
       }
     });
+
+    eggPreviewCtx.restore();
 
     // --- TEXTO (NOMBRE) ---
     if (eggName.value && eggName.value.trim().length > 0) {
@@ -506,83 +618,113 @@ function renderPreview() {
   };
 }
 
-// DOWNLOAD: plain color + design, 1000x1000 px
+// ✅ DESCARGA: renderDownload con límites
 function renderDownload() {
   const baseImg = new window.Image();
   baseImg.src = window.editorBaseImg;
   baseImg.onload = () => {
     const downloadCanvas = document.createElement('canvas');
-    downloadCanvas.width = 1000;
-    downloadCanvas.height = 1000;
+    downloadCanvas.width = downloadW;
+    downloadCanvas.height = downloadH;
     const downloadCtx = downloadCanvas.getContext('2d');
 
     // Fondo base
-    downloadCtx.drawImage(baseImg, 0, 0, 1000, 1000);
+    downloadCtx.drawImage(baseImg, 0, 0, downloadW, downloadH);
 
-    // --- Áreas corregidas ---
-    const zonaDiseno = { x: 50, y: 52, w: 900, h: 796 };  // Cara
-    const zonaTexto = { x: 50, y: 880, w: 900, h: 70 };    // Etiqueta ALIEN
+    const zones = getWorkZones(downloadW, downloadH);
+    const designZone = zones.design;
+    const textZone = zones.text;
 
-    const editW = 700, editH = 700; // área de edición real
-    const scaleX = zonaDiseno.w / editW;
-    const scaleY = zonaDiseno.h / editH;
+    // ✅ CLIPPING para zona de diseño
+    downloadCtx.save();
+    downloadCtx.beginPath();
+    downloadCtx.rect(designZone.x, designZone.y, designZone.w, designZone.h);
+    downloadCtx.clip();
 
-    // Dibujo libre perfectamente escalado
+    // Escalas para mapear desde editor a descarga
+    const editZones = getWorkZones(editW, editH);
+    const editDesignZone = editZones.design;
+    
+    const scaleX = designZone.w / editDesignZone.w;
+    const scaleY = designZone.h / editDesignZone.h;
+    const offsetX = designZone.x - (editDesignZone.x * scaleX);
+    const offsetY = designZone.y - (editDesignZone.y * scaleY);
+
+    // Dibujo libre
     downloadCtx.drawImage(
       drawCanvas,
-      0, 0, editW, editH,
-      zonaDiseno.x, zonaDiseno.y, zonaDiseno.w, zonaDiseno.h
+      editDesignZone.x, editDesignZone.y, editDesignZone.w, editDesignZone.h,
+      designZone.x, designZone.y, designZone.w, designZone.h
     );
 
-    // Stickers perfectamente escalados y posicionados
+    // Stickers
     placedStickers.forEach(st => {
       if (st.img && st.img.complete && st.img.naturalWidth > 0) {
         downloadCtx.drawImage(
           st.img,
-          zonaDiseno.x + st.x * scaleX,
-          zonaDiseno.y + st.y * scaleY,
+          offsetX + st.x * scaleX,
+          offsetY + st.y * scaleY,
           st.w * scaleX,
           st.h * scaleY
         );
       }
     });
 
-    // Texto (nombre), centrado en la zona de etiqueta
+    downloadCtx.restore();
+
+    // ✅ TEXTO con clipping
     if (eggName.value && eggName.value.trim().length > 0) {
-      const margin = 10;
+      downloadCtx.save();
+      downloadCtx.beginPath();
+      downloadCtx.rect(textZone.x, textZone.y, textZone.w, textZone.h);
+      downloadCtx.clip();
+      
+      const margin = Math.round(downloadW * 0.015);
+      const baseFontSize = Math.round(textZone.h * 0.6);
+      
       const nameFontSize = fitTextToWidth(
         downloadCtx,
         eggName.value,
         fontFamily.value,
-        zonaTexto.h - margin,
-        zonaTexto.w - margin * 2,
-        12
+        baseFontSize,
+        textZone.w - margin * 2,
+        Math.round(downloadW * 0.02)
       );
+      
       const displayText = truncateToFit(
         downloadCtx,
         eggName.value,
         fontFamily.value,
         nameFontSize,
-        zonaTexto.w - margin * 2
+        textZone.w - margin * 2
       );
-      downloadCtx.save();
+      
       downloadCtx.font = `bold ${nameFontSize}px "${fontFamily.value}"`;
       downloadCtx.fillStyle = fontColor.value || "#000";
       downloadCtx.textAlign = "center";
       downloadCtx.textBaseline = "middle";
       downloadCtx.fillText(
         displayText,
-        zonaTexto.x + zonaTexto.w / 2,
-        zonaTexto.y + zonaTexto.h / 0.92
+        textZone.x + textZone.w / 2,
+        textZone.y + textZone.h / 2
       );
+      
       downloadCtx.restore();
     }
+
+    // ✅ OPCIONAL: Dibujar los rectángulos azules para debug (puedes quitarlo después)
+    /*
+    downloadCtx.strokeStyle = "#0066ff";
+    downloadCtx.lineWidth = 3;
+    downloadCtx.strokeRect(designZone.x, designZone.y, designZone.w, designZone.h);
+    downloadCtx.strokeRect(textZone.x, textZone.y, textZone.w, textZone.h);
+    */
 
     // Descargar
     const url = downloadCanvas.toDataURL("image/png");
     const a = document.createElement('a');
     a.href = url;
-    a.download = "my-egg-design.png";
+    a.download = `egg-design-${downloadW}x${downloadH}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
