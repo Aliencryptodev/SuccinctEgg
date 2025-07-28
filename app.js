@@ -1,9 +1,14 @@
-// Dimensions (ampliados para un área de edición y preview más grande y nítida)
-const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000; // 1000x1000 para descarga
-const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
+// Dimensiones definidas con precisión
+const editW = 700; // Ancho del canvas de edición
+const editH = 700; // Alto del canvas de edición
+const previewW = 1600; // Ancho de la vista previa
+const previewH = 1120; // Alto de la vista previa
+const downloadW = 1000; // Ancho de la imagen descargada
+const downloadH = 1000; // Alto de la imagen descargada
+const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Área para el nombre
 
-// Definir zona de diseño como constante global (rectángulo azul centrado, medidas justas)
-const ZONA_DISENO = { x: 150, y: 150, w: 400, h: 400 }; // Plantilla definitiva, centrada en 700x700 (a confirmar)
+// Zona de diseño basada en las medidas exactas del rectángulo azul
+const ZONA_DISENO = { x: 150, y: 150, w: 400, h: 400 }; // Coordenadas y dimensiones confirmadas por la imagen
 
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
 window.previewBandejaImg = window.previewBandejaImg || 'assets/bandejas/bandeja_egg.png';
@@ -32,34 +37,23 @@ const noseGallery = document.getElementById('noseGallery');
 const glassesGallery = document.getElementById('glassesGallery');
 const uploadSticker = document.getElementById('uploadSticker');
 
-const eyesStickers = Array.from({length: 20}, (_, i) => `assets/stickers/eyes${i+1}.png`);
-const mouthStickers = Array.from({length: 20}, (_, i) => `assets/stickers/mouth${i+1}.png`);
-const noseStickers = Array.from({length: 20}, (_, i) => `assets/stickers/nose${i+1}.png`);
-const glassesStickers = Array.from({length: 20}, (_, i) => `assets/stickers/glasses${i+1}.png`);
+const eyesStickers = Array.from({ length: 20 }, (_, i) => `assets/stickers/eyes${i + 1}.png`);
+const mouthStickers = Array.from({ length: 20 }, (_, i) => `assets/stickers/mouth${i + 1}.png`);
+const noseStickers = Array.from({ length: 20 }, (_, i) => `assets/stickers/nose${i + 1}.png`);
+const glassesStickers = Array.from({ length: 20 }, (_, i) => `assets/stickers/glasses${i + 1}.png`);
 
 let placedStickers = [];
 let drawing = false;
 let lastX, lastY;
 
-// --- Edit sticker state ---
 let selectedStickerIndex = -1;
 let dragOffsetX = 0, dragOffsetY = 0;
 let resizing = false;
-const HANDLE_SIZE = 32; // Más grande para fácil manejo
+const HANDLE_SIZE = 32;
 
-// --- Inputs events ---
-fontFamily.addEventListener('change', () => {
-  redrawEditCanvas();
-  renderPreview();
-});
-fontColor.addEventListener('input', () => {
-  redrawEditCanvas();
-  renderPreview();
-});
-eggName.addEventListener('input', () => {
-  redrawEditCanvas();
-  renderPreview();
-});
+fontFamily.addEventListener('change', () => { redrawEditCanvas(); renderPreview(); });
+fontColor.addEventListener('input', () => { redrawEditCanvas(); renderPreview(); });
+eggName.addEventListener('input', () => { redrawEditCanvas(); renderPreview(); });
 
 function loadStickerGallery(categoryArray, container) {
   container.innerHTML = "";
@@ -67,14 +61,10 @@ function loadStickerGallery(categoryArray, container) {
     const img = document.createElement('img');
     img.src = src;
     img.alt = "sticker";
-    img.style.width = "40px"; // Más grande visual en galería
+    img.style.width = "40px";
     img.style.height = "40px";
     img.style.margin = "3px";
-    img.onclick = () => {
-      addStickerToCanvas(src, false); // Sticker predefinido (no usuario)
-      redrawEditCanvas();
-      renderPreview();
-    };
+    img.onclick = () => { addStickerToCanvas(src, false); redrawEditCanvas(); renderPreview(); };
     container.appendChild(img);
   });
 }
@@ -84,12 +74,12 @@ function loadAllGalleries() {
   loadStickerGallery(noseStickers, noseGallery);
   loadStickerGallery(glassesStickers, glassesGallery);
 }
-// --- CARGA DE STICKER DE USUARIO ---
+
 uploadSticker.addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(evt) {
+  reader.onload = function (evt) {
     const img = new window.Image();
     img.onload = () => {
       placedStickers.push({
@@ -98,7 +88,7 @@ uploadSticker.addEventListener('change', e => {
         y: ZONA_DISENO.y + Math.random() * (ZONA_DISENO.h - 180),
         w: Math.min(180, img.width),
         h: Math.min(180, img.height),
-        isUserUpload: true // MARCA como imagen subida por usuario
+        isUserUpload: true
       });
       selectedStickerIndex = placedStickers.length - 1;
       redrawEditCanvas();
@@ -135,22 +125,11 @@ function truncateToFit(ctx, text, fontFamily, fontSize, maxWidth) {
   return newText;
 }
 
-// --- STICKER HANDLES & SELECTION ---
 function getHandleRect(sticker) {
-  return {
-    x: sticker.x + sticker.w - HANDLE_SIZE / 2,
-    y: sticker.y + sticker.h - HANDLE_SIZE / 2,
-    w: HANDLE_SIZE,
-    h: HANDLE_SIZE
-  };
+  return { x: sticker.x + sticker.w - HANDLE_SIZE / 2, y: sticker.y + sticker.h - HANDLE_SIZE / 2, w: HANDLE_SIZE, h: HANDLE_SIZE };
 }
 function getCloseRect(sticker) {
-  return {
-    x: sticker.x - HANDLE_SIZE / 2,
-    y: sticker.y - HANDLE_SIZE / 2,
-    w: HANDLE_SIZE,
-    h: HANDLE_SIZE
-  };
+  return { x: sticker.x - HANDLE_SIZE / 2, y: sticker.y - HANDLE_SIZE / 2, w: HANDLE_SIZE, h: HANDLE_SIZE };
 }
 function pointInRect(x, y, rect) {
   return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
@@ -159,7 +138,6 @@ function pointInSticker(x, y, sticker) {
   return x >= sticker.x && x <= sticker.x + sticker.w && y >= sticker.y && y <= sticker.y + sticker.h;
 }
 
-// Draw everything on the edit canvas (left side)
 function redrawEditCanvas() {
   const baseImg = new window.Image();
   baseImg.src = window.editorBaseImg;
@@ -167,62 +145,53 @@ function redrawEditCanvas() {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
     editCtx.drawImage(baseImg, 0, 0, editCanvas.width, editCanvas.height);
 
-    // Aplicar clip al rectángulo azul (plantilla definitiva)
     editCtx.save();
     editCtx.beginPath();
     editCtx.rect(ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h);
     editCtx.clip();
 
-    // Dibujar pegatinas
     placedStickers.forEach((st, i) => {
-      if (st.img && st.img.complete && typeof st.img.naturalWidth === "number" && st.img.naturalWidth > 0) {
-        try {
-          editCtx.drawImage(st.img, st.x, st.y, st.w, st.h);
+      if (st.img && st.img.complete && st.img.naturalWidth > 0) {
+        editCtx.drawImage(st.img, st.x, st.y, st.w, st.h);
 
-          if (i === selectedStickerIndex) {
-            editCtx.save();
-            editCtx.strokeStyle = "#00aaff";
-            editCtx.lineWidth = 2.5;
-            editCtx.setLineDash([8, 6]);
-            editCtx.strokeRect(st.x, st.y, st.w, st.h);
-            editCtx.setLineDash([]);
+        if (i === selectedStickerIndex) {
+          editCtx.save();
+          editCtx.strokeStyle = "#00aaff";
+          editCtx.lineWidth = 2.5;
+          editCtx.setLineDash([8, 6]);
+          editCtx.strokeRect(st.x, st.y, st.w, st.h);
+          editCtx.setLineDash([]);
 
-            // Dibujar handle de redimensionar
-            editCtx.fillStyle = "#fff";
-            editCtx.strokeStyle = "#00aaff";
-            editCtx.lineWidth = 2;
-            editCtx.beginPath();
-            editCtx.rect(st.x + st.w - HANDLE_SIZE / 2, st.y + st.h - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
-            editCtx.fill();
-            editCtx.stroke();
-            editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
+          editCtx.fillStyle = "#fff";
+          editCtx.strokeStyle = "#00aaff";
+          editCtx.lineWidth = 2;
+          editCtx.beginPath();
+          editCtx.rect(st.x + st.w - HANDLE_SIZE / 2, st.y + st.h - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+          editCtx.fill();
+          editCtx.stroke();
+          editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
 
-            // Dibujar handle de cerrar
-            editCtx.fillStyle = "#fff";
-            editCtx.strokeStyle = "#ff4444";
-            editCtx.lineWidth = 2;
-            editCtx.beginPath();
-            editCtx.rect(st.x - HANDLE_SIZE / 2, st.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
-            editCtx.fill();
-            editCtx.stroke();
-            editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
+          editCtx.fillStyle = "#fff";
+          editCtx.strokeStyle = "#ff4444";
+          editCtx.lineWidth = 2;
+          editCtx.beginPath();
+          editCtx.rect(st.x - HANDLE_SIZE / 2, st.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+          editCtx.fill();
+          editCtx.stroke();
+          editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
 
-            editCtx.restore();
-          }
-        } catch (e) {
-          console.warn("No se pudo dibujar un sticker (broken image).", e);
+          editCtx.restore();
         }
       }
     });
 
-    editCtx.restore(); // Restaurar clip
+    editCtx.restore();
   };
   baseImg.onerror = () => {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
   };
 }
 
-// --- ICONS (resize and close) ---
 function getResizeIcon() {
   if (!getResizeIcon.img) {
     const svg = `<svg width="22" height="22" viewBox="0 0 22 22"><polyline points="4,18 18,18 18,4" stroke="#00aaff" stroke-width="4" fill="none"/></svg>`;
@@ -242,10 +211,8 @@ function getCloseIcon() {
   return getCloseIcon.img;
 }
 
-// --- STICKER INTERACTION ---
 editCanvas.addEventListener('mousedown', (e) => {
   const [x, y] = getPos(e);
-
   let found = false;
   for (let i = placedStickers.length - 1; i >= 0; i--) {
     const st = placedStickers[i];
@@ -286,7 +253,6 @@ editCanvas.addEventListener('mousedown', (e) => {
 
 editCanvas.addEventListener('mousemove', (e) => {
   const [x, y] = getPos(e);
-
   if (resizing && selectedStickerIndex !== -1 && pointInRect(x, y, ZONA_DISENO)) {
     const st = placedStickers[selectedStickerIndex];
     let newW = x - st.x - dragOffsetX;
@@ -299,7 +265,6 @@ editCanvas.addEventListener('mousemove', (e) => {
     renderPreview();
     return;
   }
-
   if (drawing && pointInRect(x, y, ZONA_DISENO)) {
     editCtx.strokeStyle = brushColor.value;
     editCtx.lineWidth = brushSize.value;
@@ -316,7 +281,6 @@ editCanvas.addEventListener('mousemove', (e) => {
     renderPreview();
     return;
   }
-
   if (selectedStickerIndex !== -1 && (e.buttons & 1) && !resizing && pointInRect(x, y, ZONA_DISENO)) {
     const st = placedStickers[selectedStickerIndex];
     st.x = Math.max(ZONA_DISENO.x, Math.min(x - dragOffsetX, ZONA_DISENO.x + ZONA_DISENO.w - st.w));
@@ -336,14 +300,13 @@ editCanvas.addEventListener('mouseleave', () => {
 });
 
 clearBtn.addEventListener('click', () => {
-  editCtx.clearRect(ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h); // Limpiar solo el área de diseño
+  editCtx.clearRect(ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h);
   placedStickers = [];
   selectedStickerIndex = -1;
   redrawEditCanvas();
   renderPreview();
 });
 
-// Cambiada para aceptar stickers predefinidos y distinguirlos de los del usuario
 function addStickerToCanvas(src, isUserUpload = false) {
   const img = new window.Image();
   img.onload = () => {
@@ -380,12 +343,7 @@ function renderPreview() {
     eggPreviewCtx.clearRect(0, 0, previewW, previewH);
     eggPreviewCtx.drawImage(bandejaImg, 0, 0, previewW, previewH);
 
-    const eggClipArea = {
-      x: 641.2,
-      y: 459.6,
-      w: 329.4,
-      h: 329.4
-    };
+    const eggClipArea = { x: 641.2, y: 459.6, w: 329.4, h: 329.4 };
 
     eggPreviewCtx.save();
     eggPreviewCtx.drawImage(
@@ -396,111 +354,65 @@ function renderPreview() {
     eggPreviewCtx.restore();
 
     placedStickers.forEach(st => {
-      if (st.img && st.img.complete && typeof st.img.naturalWidth === "number" && st.img.naturalWidth > 0) {
-        try {
-          eggPreviewCtx.drawImage(
-            st.img,
-            st.x * (eggClipArea.w / editW) + eggClipArea.x,
-            st.y * (eggClipArea.h / editH) + eggClipArea.y,
-            st.w * (eggClipArea.w / editW),
-            st.h * (eggClipArea.h / editH)
-          );
-        } catch (e) {}
+      if (st.img && st.img.complete && st.img.naturalWidth > 0) {
+        eggPreviewCtx.drawImage(
+          st.img,
+          st.x * (eggClipArea.w / editW) + eggClipArea.x,
+          st.y * (eggClipArea.h / editH) + eggClipArea.y,
+          st.w * (eggClipArea.w / editW),
+          st.h * (eggClipArea.h / editH)
+        );
       }
     });
 
     if (eggName.value && eggName.value.trim().length > 0) {
-      const nameArea = {
-        x: 645.4,
-        y: 890,
-        w: 288.6,
-        h: 56.4
-      };
+      const nameArea = { x: 645.4, y: 890, w: 288.6, h: 56.4 };
       const margin = 10;
-      const nameFontSize = fitTextToWidth(
-        eggPreviewCtx,
-        eggName.value,
-        fontFamily.value,
-        nameArea.h - margin,
-        nameArea.w - margin * 2,
-        12
-      );
-      const displayText = truncateToFit(
-        eggPreviewCtx,
-        eggName.value,
-        fontFamily.value,
-        nameFontSize,
-        nameArea.w - margin * 2
-      );
+      const nameFontSize = fitTextToWidth(eggPreviewCtx, eggName.value, fontFamily.value, nameArea.h - margin, nameArea.w - margin * 2, 12);
+      const displayText = truncateToFit(eggPreviewCtx, eggName.value, fontFamily.value, nameFontSize, nameArea.w - margin * 2);
       eggPreviewCtx.save();
       eggPreviewCtx.font = `bold ${nameFontSize}px "${fontFamily.value}"`;
       eggPreviewCtx.fillStyle = fontColor.value || "#000";
       eggPreviewCtx.textAlign = "center";
       eggPreviewCtx.textBaseline = "middle";
-      eggPreviewCtx.fillText(
-        displayText,
-        nameArea.x + nameArea.w / 2,
-        nameArea.y + nameArea.h / 2
-      );
+      eggPreviewCtx.fillText(displayText, nameArea.x + nameArea.w / 2, nameArea.y + nameArea.h / 2);
       eggPreviewCtx.restore();
     }
   };
 }
 
-// DOWNLOAD: plain color + design, 1000x1000 px
 function renderDownload() {
   const baseImg = new window.Image();
   baseImg.src = window.editorBaseImg;
   baseImg.onload = () => {
     const downloadCanvas = document.createElement('canvas');
-    downloadCanvas.width = downloadW; // 1000
-    downloadCanvas.height = downloadH; // 1000
+    downloadCanvas.width = downloadW;
+    downloadCanvas.height = downloadH;
     const downloadCtx = downloadCanvas.getContext('2d');
 
-    // Fondo base (centrado y escalado a 1000x1000)
-    const scale = downloadW / editW; // Escala 700x700 a 1000x1000
+    const scale = downloadW / editW;
     downloadCtx.drawImage(baseImg, 0, 0, editW, editH, 0, 0, downloadW, downloadH);
 
-    // Dibujo libre y pegatinas escalados y centrados
-    const designScale = downloadW / ZONA_DISENO.w; // Escala de 400 a 1000
+    const designScale = downloadW / ZONA_DISENO.w;
     downloadCtx.drawImage(
       editCanvas,
       ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h,
-      0, 0, downloadW, downloadH // Escalar al tamaño de descarga
+      0, 0, downloadW, downloadH
     );
 
-    // Texto (nombre) - Opcional, si quieres incluirlo en la descarga
     if (eggName.value && eggName.value.trim().length > 0) {
       const margin = 20;
-      const nameFontSize = fitTextToWidth(
-        downloadCtx,
-        eggName.value,
-        fontFamily.value,
-        downloadH * 0.1 - margin, // Aproximadamente 10% del alto
-        downloadW - margin * 2,
-        12
-      );
-      const displayText = truncateToFit(
-        downloadCtx,
-        eggName.value,
-        fontFamily.value,
-        nameFontSize,
-        downloadW - margin * 2
-      );
+      const nameFontSize = fitTextToWidth(downloadCtx, eggName.value, fontFamily.value, downloadH * 0.1 - margin, downloadW - margin * 2, 12);
+      const displayText = truncateToFit(downloadCtx, eggName.value, fontFamily.value, nameFontSize, downloadW - margin * 2);
       downloadCtx.save();
       downloadCtx.font = `bold ${nameFontSize}px "${fontFamily.value}"`;
       downloadCtx.fillStyle = fontColor.value || "#000";
       downloadCtx.textAlign = "center";
       downloadCtx.textBaseline = "middle";
-      downloadCtx.fillText(
-        displayText,
-        downloadW / 2,
-        downloadH - margin - nameFontSize / 2 // Posicionar cerca del borde inferior
-      );
+      downloadCtx.fillText(displayText, downloadW / 2, downloadH - margin - nameFontSize / 2);
       downloadCtx.restore();
     }
 
-    // Descargar
     const url = downloadCanvas.toDataURL("image/png");
     const a = document.createElement('a');
     a.href = url;
