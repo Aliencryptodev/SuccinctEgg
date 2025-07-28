@@ -1,9 +1,9 @@
-// Dimensions (ampliados para un área de edición y preview más grande y nítida)
-const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000;
-const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
+// Dimensions (ajustados para que el área de edición quepa perfectamente y sea 1:1 con el download para alineación perfecta en Blender)
+const editW = 1000, editH = 1000, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000;
 
-// Definir zona de diseño como constante global
-const ZONA_DISENO = { x: 50, y: 52, w: 900, h: 796 }; // Coincide con renderDownload
+// Zonas de trabajo (face y label, ajustadas para proporciones perfectas basadas en el template y el preview)
+const zonaFace = { x: 50, y: 52, w: 900, h: 796 }; // Rectángulo grande para la cara
+const zonaLabel = { x: 106, y: 880, w: 788, h: 70 }; // Rectángulo pequeño para la etiqueta, ajustado a proporción más estrecha y centrado
 
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
 window.previewBandejaImg = window.previewBandejaImg || 'assets/bandejas/bandeja_egg.png';
@@ -79,11 +79,11 @@ function loadStickerGallery(categoryArray, container) {
     const img = document.createElement('img');
     img.src = src;
     img.alt = "sticker";
-    img.style.width = "40px"; // Más grande visual en galería
+    img.style.width = "40px";
     img.style.height = "40px";
     img.style.margin = "3px";
     img.onclick = () => {
-      addStickerToCanvas(src, false); // Sticker predefinido (no usuario)
+      addStickerToCanvas(src, false);
       redrawEditCanvas();
       renderPreview();
     };
@@ -104,14 +104,16 @@ uploadSticker.addEventListener('change', e => {
   reader.onload = function(evt) {
     const img = new window.Image();
     img.onload = () => {
-      placedStickers.push({
+      const st = {
         img: img,
-        x: 100 + Math.random() * 180,
-        y: 100 + Math.random() * 180,
+        x: zonaFace.x + Math.random() * (zonaFace.w - 180),
+        y: zonaFace.y + Math.random() * (zonaFace.h - 180),
         w: Math.min(180, img.width),
         h: Math.min(180, img.height),
-        isUserUpload: true // MARCA como imagen subida por usuario
-      });
+        isUserUpload: true
+      };
+      clampStickerToZona(st);
+      placedStickers.push(st);
       selectedStickerIndex = placedStickers.length - 1;
       redrawEditCanvas();
       renderPreview();
@@ -171,6 +173,12 @@ function pointInSticker(x, y, sticker) {
   return x >= sticker.x && x <= sticker.x + sticker.w && y >= sticker.y && y <= sticker.y + sticker.h;
 }
 
+// Limita la posición del sticker dentro de la zona de trabajo
+function clampStickerToZona(sticker) {
+  sticker.x = Math.max(zonaFace.x, Math.min(sticker.x, zonaFace.x + zonaFace.w - sticker.w));
+  sticker.y = Math.max(zonaFace.y, Math.min(sticker.y, zonaFace.y + zonaFace.h - sticker.h));
+}
+
 // Draw everything on the edit canvas (left side)
 function redrawEditCanvas() {
   const baseImg = new window.Image();
@@ -179,58 +187,110 @@ function redrawEditCanvas() {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
     editCtx.drawImage(baseImg, 0, 0, editCanvas.width, editCanvas.height);
 
-    // Aplicar clip
+    // --- Zona azul de trabajo (guía visual) ---
+    editCtx.save();
+    editCtx.strokeStyle = "blue";
+    editCtx.lineWidth = 3;
+    editCtx.strokeRect(zonaFace.x, zonaFace.y, zonaFace.w, zonaFace.h);
+    editCtx.strokeRect(zonaLabel.x, zonaLabel.y, zonaLabel.w, zonaLabel.h);
+    editCtx.restore();
+
+    // Freehand drawing (clipping)
     editCtx.save();
     editCtx.beginPath();
-    editCtx.rect(ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h);
+    editCtx.rect(zonaFace.x, zonaFace.y, zonaFace.w, zonaFace.h);
     editCtx.clip();
-
-    // Dibujar dibujo a mano alzada
     editCtx.drawImage(drawCanvas, 0, 0);
+    editCtx.restore();
 
-    // Dibujar pegatinas
+    // Stickers (clipping)
     placedStickers.forEach((st, i) => {
-      if (st.img && st.img.complete && typeof st.img.naturalWidth === "number" && st.img.naturalWidth > 0) {
-        try {
-          editCtx.drawImage(st.img, st.x, st.y, st.w, st.h);
+      if (
+        st.img &&
+        st.img.complete &&
+        typeof st.img.naturalWidth === "number" &&
+        st.img.naturalWidth > 0
+      ) {
+        editCtx.save();
+        editCtx.beginPath();
+        editCtx.rect(zonaFace.x, zonaFace.y, zonaFace.w, zonaFace.h);
+        editCtx.clip();
+        editCtx.drawImage(st.img, st.x, st.y, st.w, st.h);
+        editCtx.restore();
 
-          if (i === selectedStickerIndex) {
-            editCtx.save();
-            editCtx.strokeStyle = "#00aaff";
-            editCtx.lineWidth = 2.5;
-            editCtx.setLineDash([8, 6]);
-            editCtx.strokeRect(st.x, st.y, st.w, st.h);
-            editCtx.setLineDash([]);
+        if (i === selectedStickerIndex) {
+          editCtx.save();
+          editCtx.strokeStyle = "#00aaff";
+          editCtx.lineWidth = 2.5;
+          editCtx.setLineDash([8, 6]);
+          editCtx.strokeRect(st.x, st.y, st.w, st.h);
+          editCtx.setLineDash([]);
 
-            // Dibujar handle de redimensionar
-            editCtx.fillStyle = "#fff";
-            editCtx.strokeStyle = "#00aaff";
-            editCtx.lineWidth = 2;
-            editCtx.beginPath();
-            editCtx.rect(st.x + st.w - HANDLE_SIZE / 2, st.y + st.h - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
-            editCtx.fill();
-            editCtx.stroke();
-            editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
+          // Resize handle (bottom-right)
+          editCtx.fillStyle = "#fff";
+          editCtx.strokeStyle = "#00aaff";
+          editCtx.lineWidth = 2;
+          editCtx.beginPath();
+          editCtx.rect(
+            st.x + st.w - HANDLE_SIZE / 2,
+            st.y + st.h - HANDLE_SIZE / 2,
+            HANDLE_SIZE,
+            HANDLE_SIZE
+          );
+          editCtx.fill();
+          editCtx.stroke();
+          editCtx.drawImage(getResizeIcon(), st.x + st.w - HANDLE_SIZE / 2 + 5, st.y + st.h - HANDLE_SIZE / 2 + 5, 22, 22);
 
-            // Dibujar handle de cerrar
-            editCtx.fillStyle = "#fff";
-            editCtx.strokeStyle = "#ff4444";
-            editCtx.lineWidth = 2;
-            editCtx.beginPath();
-            editCtx.rect(st.x - HANDLE_SIZE / 2, st.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
-            editCtx.fill();
-            editCtx.stroke();
-            editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
+          // Close handle (top-left)
+          editCtx.fillStyle = "#fff";
+          editCtx.strokeStyle = "#ff4444";
+          editCtx.lineWidth = 2;
+          editCtx.beginPath();
+          editCtx.rect(
+            st.x - HANDLE_SIZE / 2,
+            st.y - HANDLE_SIZE / 2,
+            HANDLE_SIZE,
+            HANDLE_SIZE
+          );
+          editCtx.fill();
+          editCtx.stroke();
+          editCtx.drawImage(getCloseIcon(), st.x - HANDLE_SIZE / 2 + 5, st.y - HANDLE_SIZE / 2 + 5, 22, 22);
 
-            editCtx.restore();
-          }
-        } catch (e) {
-          console.warn("No se pudo dibujar un sticker (broken image).", e);
+          editCtx.restore();
         }
       }
     });
 
-    editCtx.restore(); // Restaurar clip
+    // --- TEXTO (NOMBRE) en el editor para ver cómo quedará en la textura ---
+    if (eggName.value && eggName.value.trim().length > 0) {
+      const margin = 10;
+      const nameFontSize = fitTextToWidth(
+        editCtx,
+        eggName.value,
+        fontFamily.value,
+        zonaLabel.h - margin,
+        zonaLabel.w - margin * 2,
+        12
+      );
+      const displayText = truncateToFit(
+        editCtx,
+        eggName.value,
+        fontFamily.value,
+        nameFontSize,
+        zonaLabel.w - margin * 2
+      );
+      editCtx.save();
+      editCtx.font = `bold ${nameFontSize}px "${fontFamily.value}"`;
+      editCtx.fillStyle = fontColor.value || "#000";
+      editCtx.textAlign = "center";
+      editCtx.textBaseline = "middle";
+      editCtx.fillText(
+        displayText,
+        zonaLabel.x + zonaLabel.w / 2,
+        zonaLabel.y + zonaLabel.h / 2
+      );
+      editCtx.restore();
+    }
   };
   baseImg.onerror = () => {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
@@ -240,7 +300,7 @@ function redrawEditCanvas() {
 // --- ICONS (resize and close) ---
 function getResizeIcon() {
   if (!getResizeIcon.img) {
-    const svg = `<svg width="22" height="22" viewBox="0 0 22 22"><polyline points="4,18 18,18 18,4" stroke="#00aaff" stroke-width="4" fill="none"/></svg>`;
+    const svg = `<svg width="22" height="22" viewBox="0 0 22 22"><polyline points="4,,18 18,18 18,4" stroke="#00aaff" stroke-width="4" fill="none"/></svg>`;
     const img = new window.Image();
     img.src = 'data:image/svg+xml;base64,' + btoa(svg);
     getResizeIcon.img = img;
@@ -261,10 +321,12 @@ function getCloseIcon() {
 editCanvas.addEventListener('mousedown', (e) => {
   const [x, y] = getPos(e);
 
+  // Check stickers from top to bottom (topmost first)
   let found = false;
   for (let i = placedStickers.length - 1; i >= 0; i--) {
     const st = placedStickers[i];
     if (i === selectedStickerIndex) {
+      // Check resize handle
       if (pointInRect(x, y, getHandleRect(st))) {
         resizing = true;
         dragOffsetX = x - (st.x + st.w);
@@ -272,6 +334,7 @@ editCanvas.addEventListener('mousedown', (e) => {
         found = true;
         break;
       }
+      // Check close handle
       if (pointInRect(x, y, getCloseRect(st))) {
         placedStickers.splice(i, 1);
         selectedStickerIndex = -1;
@@ -294,8 +357,14 @@ editCanvas.addEventListener('mousedown', (e) => {
   if (!found) {
     selectedStickerIndex = -1;
     redrawEditCanvas();
-    drawing = true;
-    [lastX, lastY] = [x, y];
+    // Solo permite dibujar si el mouse está en zonaFace
+    if (
+      x >= zonaFace.x && x <= zonaFace.x + zonaFace.w &&
+      y >= zonaFace.y && y <= zonaFace.y + zonaFace.h
+    ) {
+      drawing = true;
+      [lastX, lastY] = [x, y];
+    }
   }
 });
 
@@ -306,36 +375,56 @@ editCanvas.addEventListener('mousemove', (e) => {
     const st = placedStickers[selectedStickerIndex];
     let newW = x - st.x - dragOffsetX;
     let newH = y - st.y - dragOffsetY;
-    newW = Math.max(40, Math.min(newW, ZONA_DISENO.x + ZONA_DISENO.w - st.x));
-    newH = Math.max(40, Math.min(newH, ZONA_DISENO.y + ZONA_DISENO.h - st.y));
+    newW = Math.max(40, newW);
+    newH = Math.max(40, newH);
+    if (!st.isUserUpload) {
+      newW = Math.min(zonaFace.w - (st.x - zonaFace.x), newW);
+      newH = Math.min(zonaFace.h - (st.y - zonaFace.y), newH);
+    }
     st.w = newW;
     st.h = newH;
+    clampStickerToZona(st);
     redrawEditCanvas();
     renderPreview();
     return;
   }
 
   if (drawing) {
-    drawCtx.strokeStyle = brushColor.value;
-    drawCtx.lineWidth = brushSize.value;
-    drawCtx.lineCap = "round";
-    drawCtx.lineJoin = "round";
-    drawCtx.beginPath();
-    drawCtx.moveTo(lastX, lastY);
-    const clippedX = Math.max(ZONA_DISENO.x, Math.min(x, ZONA_DISENO.x + ZONA_DISENO.w));
-    const clippedY = Math.max(ZONA_DISENO.y, Math.min(y, ZONA_DISENO.y + ZONA_DISENO.h));
-    drawCtx.lineTo(clippedX, clippedY);
-    drawCtx.stroke();
-    [lastX, lastY] = [clippedX, clippedY];
-    redrawEditCanvas();
-    renderPreview();
+    // Solo dibuja dentro de zonaFace
+    if (
+      x >= zonaFace.x && x <= zonaFace.x + zonaFace.w &&
+      y >= zonaFace.y && y <= zonaFace.y + zonaFace.h &&
+      lastX >= zonaFace.x && lastX <= zonaFace.x + zonaFace.w &&
+      lastY >= zonaFace.y && lastY <= zonaFace.y + zonaFace.h
+    ) {
+      drawCtx.save();
+      drawCtx.beginPath();
+      drawCtx.rect(zonaFace.x, zonaFace.y, zonaFace.w, zonaFace.h);
+      drawCtx.clip();
+      drawCtx.strokeStyle = brushColor.value;
+      drawCtx.lineWidth = brushSize.value;
+      drawCtx.lineCap = "round";
+      drawCtx.lineJoin = "round";
+      drawCtx.beginPath();
+      drawCtx.moveTo(lastX, lastY);
+      drawCtx.lineTo(x, y);
+      drawCtx.stroke();
+      drawCtx.restore();
+      [lastX, lastY] = [x, y];
+      redrawEditCanvas();
+      renderPreview();
+    } else {
+      drawing = false;
+    }
     return;
   }
 
+  // Move sticker
   if (selectedStickerIndex !== -1 && (e.buttons & 1) && !resizing) {
     const st = placedStickers[selectedStickerIndex];
-    st.x = Math.max(ZONA_DISENO.x, Math.min(x - dragOffsetX, ZONA_DISENO.x + ZONA_DISENO.w - st.w));
-    st.y = Math.max(ZONA_DISENO.y, Math.min(y - dragOffsetY, ZONA_DISENO.y + ZONA_DISENO.h - st.h));
+    st.x = x - dragOffsetX;
+    st.y = y - dragOffsetY;
+    clampStickerToZona(st);
     redrawEditCanvas();
     renderPreview();
   }
@@ -363,14 +452,16 @@ clearBtn.addEventListener('click', () => {
 function addStickerToCanvas(src, isUserUpload = false) {
   const img = new window.Image();
   img.onload = () => {
-    placedStickers.push({
+    const st = {
       img: img,
-      x: Math.max(ZONA_DISENO.x, Math.min(100 + Math.random() * 180, ZONA_DISENO.x + ZONA_DISENO.w - 140)),
-      y: Math.max(ZONA_DISENO.y, Math.min(100 + Math.random() * 180, ZONA_DISENO.y + ZONA_DISENO.h - 140)),
+      x: zonaFace.x + Math.random() * (zonaFace.w - 140),
+      y: zonaFace.y + Math.random() * (zonaFace.h - 140),
       w: 140,
       h: 140,
       isUserUpload
-    });
+    };
+    clampStickerToZona(st);
+    placedStickers.push(st);
     selectedStickerIndex = placedStickers.length - 1;
     redrawEditCanvas();
     renderPreview();
@@ -396,6 +487,7 @@ function renderPreview() {
     eggPreviewCtx.clearRect(0, 0, previewW, previewH);
     eggPreviewCtx.drawImage(bandejaImg, 0, 0, previewW, previewH);
 
+    // Coordenadas del huevo central en la bandeja
     const eggClipArea = {
       x: 641.2,
       y: 459.6,
@@ -403,28 +495,39 @@ function renderPreview() {
       h: 329.4
     };
 
+    // --- DIBUJO LIBRE (solo la zona de trabajo) ---
     eggPreviewCtx.save();
     eggPreviewCtx.drawImage(
       drawCanvas,
-      0, 0, drawCanvas.width, drawCanvas.height,
+      zonaFace.x, zonaFace.y, zonaFace.w, zonaFace.h,
       eggClipArea.x, eggClipArea.y, eggClipArea.w, eggClipArea.h
     );
     eggPreviewCtx.restore();
 
+    // --- STICKERS (solo los que están dentro de zonaFace) ---
     placedStickers.forEach(st => {
-      if (st.img && st.img.complete && typeof st.img.naturalWidth === "number" && st.img.naturalWidth > 0) {
-        try {
-          eggPreviewCtx.drawImage(
-            st.img,
-            st.x * (eggClipArea.w / editW) + eggClipArea.x,
-            st.y * (eggClipArea.h / editH) + eggClipArea.y,
-            st.w * (eggClipArea.w / editW),
-            st.h * (eggClipArea.h / editH)
-          );
-        } catch (e) {}
+      if (
+        st.img &&
+        st.img.complete &&
+        typeof st.img.naturalWidth === "number" &&
+        st.img.naturalWidth > 0
+      ) {
+        // Ajusta coordenadas relativas a zonaFace
+        eggPreviewCtx.drawImage(
+          st.img,
+          st.x - zonaFace.x,
+          st.y - zonaFace.y,
+          st.w,
+          st.h,
+          eggClipArea.x + ((st.x - zonaFace.x) / zonaFace.w) * eggClipArea.w,
+          eggClipArea.y + ((st.y - zonaFace.y) / zonaFace.h) * eggClipArea.h,
+          (st.w / zonaFace.w) * eggClipArea.w,
+          (st.h / zonaFace.h) * eggClipArea.h
+        );
       }
     });
 
+    // --- TEXTO (NOMBRE) ---
     if (eggName.value && eggName.value.trim().length > 0) {
       const nameArea = {
         x: 645.4,
@@ -469,51 +572,50 @@ function renderDownload() {
   baseImg.src = window.editorBaseImg;
   baseImg.onload = () => {
     const downloadCanvas = document.createElement('canvas');
-    downloadCanvas.width = downloadW; // 1000
-    downloadCanvas.height = downloadH; // 1000
+    downloadCanvas.width = 1000;
+    downloadCanvas.height = 1000;
     const downloadCtx = downloadCanvas.getContext('2d');
 
-    // Crear un clip para recortar
-    downloadCtx.save();
-    downloadCtx.beginPath();
-    downloadCtx.rect(ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h);
-    downloadCtx.clip();
-
     // Fondo base
-    downloadCtx.drawImage(baseImg, 0, 0, downloadW, downloadH);
+    downloadCtx.drawImage(baseImg, 0, 0, 1000, 1000);
 
-    // Dibujo libre escalado
-    const scaleX = ZONA_DISENO.w / editW;
-    const scaleY = ZONA_DISENO.h / editH;
+    // --- Áreas corregidas ---
+    const escalaX = zonaFace.w / zonaFace.w; // 1:1
+    const escalaY = zonaFace.h / zonaFace.h; // 1:1
+
+    // Dibujo libre perfectamente recortado y escalado
     downloadCtx.drawImage(
       drawCanvas,
-      0, 0, editW, editH,
-      ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h
+      zonaFace.x, zonaFace.y, zonaFace.w, zonaFace.h,
+      zonaFace.x, zonaFace.y, zonaFace.w, zonaFace.h
     );
 
-    // Stickers escalados y posicionados
+    // Stickers perfectamente escalados y posicionados
     placedStickers.forEach(st => {
       if (st.img && st.img.complete && st.img.naturalWidth > 0) {
         downloadCtx.drawImage(
           st.img,
-          ZONA_DISENO.x + st.x * scaleX,
-          ZONA_DISENO.y + st.y * scaleY,
-          st.w * scaleX,
-          st.h * scaleY
+          0,
+          0,
+          st.w,
+          st.h,
+          zonaFace.x + (st.x - zonaFace.x) * escalaX,
+          zonaFace.y + (st.y - zonaFace.y) * escalaY,
+          st.w * escalaX,
+          st.h * escalaY
         );
       }
     });
 
-    // Texto (nombre)
-    const zonaTexto = { x: 50, y: 880, w: 900, h: 70 };
+    // Texto (nombre), centrado en la zona de etiqueta
     if (eggName.value && eggName.value.trim().length > 0) {
       const margin = 10;
       const nameFontSize = fitTextToWidth(
         downloadCtx,
         eggName.value,
         fontFamily.value,
-        zonaTexto.h - margin,
-        zonaTexto.w - margin * 2,
+        zonaLabel.h - margin,
+        zonaLabel.w - margin * 2,
         12
       );
       const displayText = truncateToFit(
@@ -521,7 +623,7 @@ function renderDownload() {
         eggName.value,
         fontFamily.value,
         nameFontSize,
-        zonaTexto.w - margin * 2
+        zonaLabel.w - margin * 2
       );
       downloadCtx.save();
       downloadCtx.font = `bold ${nameFontSize}px "${fontFamily.value}"`;
@@ -530,13 +632,11 @@ function renderDownload() {
       downloadCtx.textBaseline = "middle";
       downloadCtx.fillText(
         displayText,
-        zonaTexto.x + zonaTexto.w / 2,
-        zonaTexto.y + zonaTexto.h / 0.92
+        zonaLabel.x + zonaLabel.w / 2,
+        zonaLabel.y + zonaLabel.h / 2
       );
       downloadCtx.restore();
     }
-
-    downloadCtx.restore(); // Restaurar clip
 
     // Descargar
     const url = downloadCanvas.toDataURL("image/png");
