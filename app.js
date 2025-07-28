@@ -1,9 +1,9 @@
 // Dimensions (ampliados para un área de edición y preview más grande y nítida)
-const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000; // Restaurado a 1000x1000
+const editW = 700, editH = 700, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000; // 1000x1000 para descarga
 const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
 
-// Definir zona de diseño como constante global (calculado según la imagen)
-const ZONA_DISENO = { x: 150, y: 150, w: 400, h: 400 }; // Rectángulo azul en Egg Editor
+// Definir zona de diseño como constante global (rectángulo azul centrado en el canvas)
+const ZONA_DISENO = { x: 150, y: 150, w: 400, h: 400 }; // Plantilla definitiva, centrada en 700x700
 
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
 window.previewBandejaImg = window.previewBandejaImg || 'assets/bandejas/bandeja_egg.png';
@@ -179,7 +179,7 @@ function redrawEditCanvas() {
     editCtx.clearRect(0, 0, editCanvas.width, editCanvas.height);
     editCtx.drawImage(baseImg, 0, 0, editCanvas.width, editCanvas.height);
 
-    // Aplicar clip
+    // Aplicar clip al rectángulo azul (plantilla definitiva)
     editCtx.save();
     editCtx.beginPath();
     editCtx.rect(ZONA_DISENO.x, ZONA_DISENO.y, ZONA_DISENO.w, ZONA_DISENO.h);
@@ -473,8 +473,8 @@ function renderDownload() {
     downloadCanvas.height = downloadH; // 1000
     const downloadCtx = downloadCanvas.getContext('2d');
 
-    // Fondo base (centrado y escalado)
-    const scale = 1000 / editW; // Escala para que 700x700 quepa en 1000x1000
+    // Fondo base (centrado y escalado a 1000x1000)
+    const scale = downloadW / editW; // Escala 700x700 a 1000x1000
     downloadCtx.drawImage(baseImg, 0, 0, editW, editH, 0, 0, downloadW, downloadH);
 
     // Dibujo libre escalado y centrado
