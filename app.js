@@ -8,8 +8,8 @@ const WORK_ZONES = {
   design: {
     x: 0.21,      // 21% margen izquierdo 
     y: 0.27,      // 27% margen superior 
-    w: 0.58,      // 58% ancho 
-    h: 0.50       // 50% altura 
+    w: 1,      // 58% ancho 
+    h: 1      // 50% altura 
   },
   // Porcentajes para la zona de texto (nombre)
   text: {
