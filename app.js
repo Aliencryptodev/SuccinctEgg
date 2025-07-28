@@ -2,20 +2,20 @@
 const editW = 716, editH = 788, previewW = 1600, previewH = 1120, downloadW = 1000, downloadH = 1000;
 const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo tamaño
 
-// ✅ ZONAS PERMITIDAS - Ajustadas para el huevo real
+// ✅ ZONAS PERMITIDAS - Ajustadas correctamente para el huevo
 const WORK_ZONES = {
-  // Porcentajes para la zona de trabajo (cara del huevo)
+  // Porcentajes para la zona de trabajo (cara del huevo) - CORREGIDOS
   design: {
-    x: 0.05,      // 5% margen izquierdo
-    y: 0.05,      // 5% margen superior  
-    w: 0.90,      // 90% ancho
-    h: 0.80       // 80% altura (hasta antes del área del nombre)
+    x: 0.135,     // 13.5% margen izquierdo (más preciso)
+    y: 0.335,     // 33.5% margen superior (empieza más abajo)
+    w: 0.73,      // 73% ancho (más estrecho para ajustarse al huevo)
+    h: 0.45       // 45% altura (más corto, termina antes del área del nombre)
   },
   // Porcentajes para la zona de texto (nombre)
   text: {
-    x: 0.05,      // 5% margen izquierdo
+    x: 0.135,     // 13.5% margen izquierdo (igual que design)
     y: 0.87,      // 87% desde arriba
-    w: 0.90,      // 90% ancho
+    w: 0.73,      // 73% ancho (igual que design)
     h: 0.08       // 8% altura
   }
 };
@@ -304,7 +304,7 @@ function addStickerToCanvas(src, isUserUpload = false) {
   img.src = src;
 }
 
-// ✅ EDITOR: Función redrawEditCanvas con límites
+// ✅ EDITOR: Función redrawEditCanvas con límites CORREGIDOS
 function redrawEditCanvas() {
   const baseImg = new window.Image();
   baseImg.src = window.editorBaseImg;
@@ -384,7 +384,7 @@ function redrawEditCanvas() {
       }
     });
 
-    // ✅ MOSTRAR límites de zona de trabajo para debug (activado temporalmente)
+    // ✅ MOSTRAR límites de zona de trabajo para debug
     editCtx.strokeStyle = "#0066ff";
     editCtx.lineWidth = 2;
     editCtx.setLineDash([5, 5]);
@@ -722,14 +722,6 @@ function renderDownload() {
       
       downloadCtx.restore();
     }
-
-    // ✅ OPCIONAL: Dibujar los rectángulos azules para debug (puedes quitarlo después)
-    /*
-    downloadCtx.strokeStyle = "#0066ff";
-    downloadCtx.lineWidth = 3;
-    downloadCtx.strokeRect(designZone.x, designZone.y, designZone.w, designZone.h);
-    downloadCtx.strokeRect(textZone.x, textZone.y, textZone.w, textZone.h);
-    */
 
     // Descargar
     const url = downloadCanvas.toDataURL("image/png");
