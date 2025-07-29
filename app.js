@@ -13,9 +13,9 @@ const WORK_ZONES = {
   },
   // Porcentajes para la zona de texto (nombre)
   text: {
-    x: 0.16,      // 21% margen izquierdo (igual que design)
+    x: 0.259,      // 21% margen izquierdo (igual que design)
     y: 0.922,      // 85% desde arriba
-    w: 0.68,      // 58% ancho (igual que design)
+    w: 0.48,      // 58% ancho (igual que design)
     h: 0.06       // 8% altura
   }
 };
@@ -680,7 +680,7 @@ function renderDownload() {
       downloadCtx.clip();
       
       const margin = Math.round(downloadW * 0.015);
-      const baseFontSize = Math.round(textZone.h * 0.6);
+      const baseFontSize = Math.round(textZone.h * 0.7);
       
       const nameFontSize = fitTextToWidth(
         downloadCtx,
