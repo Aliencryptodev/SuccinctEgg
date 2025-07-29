@@ -78,8 +78,8 @@
     <div id="eggColorButtons"></div>
   </div>
   <div class="btns-row">
-    <button id="previewBtn">Preview</button>
     <button id="downloadBtn">Download PNG</button>
+    <button id="previewBtn">Copy Preview</button>
     <button id="shareTwitterBtn" class="main-btn">Share on Twitter</button>
   </div>
 </section>
@@ -109,20 +109,18 @@
 <script src="app.js"></script>
 <script>
 // Share on Twitter
-document.getElementById('shareTwitterBtn').addEventListener('click', function() {
-  const tweetText = encodeURIComponent(
-    "this is my @succinctlabs egg template. Hey @puselol add me to the collection. \n\nEGG."
-  );
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
-  window.open(twitterUrl, '_blank');
+let twitterUrl = "";
 
-  // Show the toast/modal until user clicks OK
-  const toast = document.getElementById('twitterToast');
-  toast.style.display = 'block';
+document.getElementById('shareTwitterBtn').addEventListener('click', function() {
+  twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+    "This is my @succinctlabs egg template.\nHey @puselol add me to the collection.\n\nEGG."
+  )}`;
+  document.getElementById('twitterToast').style.display = 'block';
 });
 
 document.getElementById('twitterToastOkBtn').addEventListener('click', function() {
   document.getElementById('twitterToast').style.display = 'none';
+  window.open(twitterUrl, '_blank');
 });
 
 // Copy canvas to clipboard on Preview click
