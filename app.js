@@ -576,41 +576,36 @@ function renderPreview() {
     eggPreviewCtx.restore();
 
     // --- TEXTO (NOMBRE) ---
-    if (eggName.value && eggName.value.trim().length > 0) {
-      const nameArea = {
-        x: 645.4,
-        y: 890,
-        w: 288.6,
-        h: 56.4
-      };
-      const margin = 10;
-      const nameFontSize = fitTextToWidth(
-        eggPreviewCtx,
-        eggName.value,
-        fontFamily.value,
-        nameArea.h - margin,
-        nameArea.w - margin * 2,
-        12
-      );
-      const displayText = truncateToFit(
-        eggPreviewCtx,
-        eggName.value,
-        fontFamily.value,
-        nameFontSize,
-        nameArea.w - margin * 2
-      );
-      eggPreviewCtx.save();
-      eggPreviewCtx.font = `bold ${nameFontSize}px "${fontFamily.value}"`;
-      eggPreviewCtx.fillStyle = fontColor.value || "#000";
-      eggPreviewCtx.textAlign = "center";
-      eggPreviewCtx.textBaseline = "middle";
-      eggPreviewCtx.fillText(
-        displayText,
-        nameArea.x + nameArea.w / 2,
-        nameArea.y + nameArea.h / 2
-      );
-      eggPreviewCtx.restore();
-    }
+if (eggName.value && eggName.value.trim().length > 0) {
+  const nameArea = {
+    x: 600,     // Ajusta este valor para que el rectángulo cubra la barra gris exacta
+    y: 890,
+    w: 420,     // Ajusta este valor según el ancho de la barra gris
+    h: 56.4
+  };
+  const nameFontSize = 30; // Tamaño grande
+  const margin = 10;
+
+  // Recorta si el texto es aún más largo (con maxlength=18 no debería)
+  const displayText = truncateToFit(
+    eggPreviewCtx,
+    eggName.value,
+    fontFamily.value,
+    nameFontSize,
+    nameArea.w - margin * 2
+  );
+    eggPreviewCtx.save();
+    eggPreviewCtx.font = `bold ${nameFontSize}px "${fontFamily.value}"`;
+    eggPreviewCtx.fillStyle = fontColor.value || "#000";
+    eggPreviewCtx.textAlign = "center"; // ¡Importante!
+    eggPreviewCtx.textBaseline = "middle";
+    eggPreviewCtx.fillText(
+    displayText,
+    nameArea.x + nameArea.w / 2 - 20, // CENTRO de la barra
+    nameArea.y + nameArea.h / 2
+  );
+   eggPreviewCtx.restore();
+  }
   };
 }
 
@@ -731,3 +726,4 @@ window.addEventListener('DOMContentLoaded', () => {
   redrawEditCanvas();
   renderPreview();
 });
+
