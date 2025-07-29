@@ -541,17 +541,6 @@ function renderPreview() {
       h: 329.4
     };
 
-    // ✅ APLICAR CLIPPING también en preview
-    eggPreviewCtx.save();
-    eggPreviewCtx.beginPath();
-    eggPreviewCtx.ellipse(
-      eggClipArea.x + eggClipArea.w/2, 
-      eggClipArea.y + eggClipArea.h/2, 
-      eggClipArea.w/2, 
-      eggClipArea.h/2, 
-      0, 0, 2 * Math.PI
-    );
-    eggPreviewCtx.clip();
 
     // Calcular escalas para mapear desde zona de trabajo a preview
     const zones = getWorkZones(editW, editH);
