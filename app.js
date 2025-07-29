@@ -6,10 +6,10 @@ const areaNombre = { x: 140, y: 615, w: 420, h: 50 }; // Ajustado para el nuevo 
 const WORK_ZONES = {
   // Porcentajes para la zona de trabajo (cara del huevo) - CORREGIDOS
   design: {
-    x: 0,      // 21% margen izquierdo 
-    y: 0,      // 27% margen superior 
-    w: 1,      // 58% ancho 
-    h: 1      // 50% altura 
+    x: 0.145,      // 21% margen izquierdo 
+    y: 0.0785,      // 27% margen superior 
+    w: 0.71,      // 58% ancho 
+    h: 0.785      // 50% altura 
   },
   // Porcentajes para la zona de texto (nombre)
   text: {
@@ -742,3 +742,4 @@ window.addEventListener('DOMContentLoaded', () => {
   redrawEditCanvas();
   renderPreview();
 });
+
