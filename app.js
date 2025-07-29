@@ -17,6 +17,7 @@ const WORK_ZONES = {
     y: 0.922,      // 85% desde arriba
     w: 0.68,      // 58% ancho (igual que design)
     h: 0.06       // 8% altura
+  }
 };
 
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
@@ -533,7 +534,7 @@ function renderPreview() {
     eggPreviewCtx.drawImage(bandejaImg, 0, 0, previewW, previewH);
 
     // Coordenadas del huevo central en la bandeja
-      const eggClipArea = {
+    const eggClipArea = {
       x: 645,   //+ dere - izqu
       y: 465.5,  //+ baja - sube
       w: 310,   // + ancho - estrecho
@@ -730,4 +731,3 @@ window.addEventListener('DOMContentLoaded', () => {
   redrawEditCanvas();
   renderPreview();
 });
-
