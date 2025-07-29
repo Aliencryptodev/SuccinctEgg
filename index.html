@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="e">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Succinct Eggs</title>
@@ -70,21 +70,88 @@
     </section>
 
     <!-- Previsualización y descarga -->
-    <section class="preview-panel">
-      <h3>Preview</h3>
-      <canvas id="eggPreview" width="1600" height="1120"></canvas>
-      <div id="eggColorSelector">
-        <h4>Choose the color of the egg</h4>
-        <div id="eggColorButtons"></div>
-      </div>
-      <div class="btns-row">
-        <button id="previewBtn">Preview</button>
-        <button id="downloadBtn">Download PNG</button>
-      </div>
-    </section>
+<section class="preview-panel">
+  <h3>Preview</h3>
+  <canvas id="eggPreview" width="1600" height="1120"></canvas>
+  <div id="eggColorSelector">
+    <h4>Choose the color of the egg</h4>
+    <div id="eggColorButtons"></div>
   </div>
-  <script src="eggColors.js"></script>
-  <script src="eggColorSelector.js"></script>
-  <script src="app.js"></script>
+  <div class="btns-row">
+    <button id="previewBtn">Preview</button>
+    <button id="downloadBtn">Download PNG</button>
+    <button id="shareTwitterBtn" class="main-btn">Share on Twitter</button>
+  </div>
+</section>
+</div>
+
+<!-- Toast/modal for Twitter notification (English) -->
+<div id="twitterToast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#FE11C5; color:#fff; padding:18px 28px; border-radius:10px; font-size:1.1em; box-shadow:0 2px 18px #FE11C599; z-index:9999; font-weight:bold;">
+  <div>
+    <b>Attention!</b><br>
+    To complete your tweet:<br>
+    1️⃣ Download the image using <b>Download PNG</b>.<br>
+    2️⃣ Right-click on the <b>Preview</b> image and select “Copy image”.<br>
+    3️⃣ Paste both images into the tweet before posting.<br>
+    <div style="text-align:right; margin-top:12px;">
+      <button id="twitterToastOkBtn" style="background:#fff; color:#FE11C5; border:none; padding:6px 18px; border-radius:8px; font-size:1em; font-weight:bold; cursor:pointer;">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast/modal for copy error (English) -->
+<div id="copyErrorToast" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:18px 28px; border-radius:10px; font-size:1.1em; box-shadow:0 2px 18px #0006; z-index:9999; font-weight:bold;">
+  The image could not be copied automatically. Please right-click on the preview and select 'Copy image' manually.
+</div>
+
+<script src="eggColors.js"></script>
+<script src="eggColorSelector.js"></script>
+<script src="app.js"></script>
+<script>
+// Share on Twitter
+document.getElementById('shareTwitterBtn').addEventListener('click', function() {
+  const tweetText = encodeURIComponent(
+    "this is my @succinctlabs egg template. Hey @puselol add me to the collection. \n\nEGG."
+  );
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+  window.open(twitterUrl, '_blank');
+
+  // Show the toast/modal until user clicks OK
+  const toast = document.getElementById('twitterToast');
+  toast.style.display = 'block';
+});
+
+document.getElementById('twitterToastOkBtn').addEventListener('click', function() {
+  document.getElementById('twitterToast').style.display = 'none';
+});
+
+// Copy canvas to clipboard on Preview click
+document.getElementById('previewBtn').addEventListener('click', async function() {
+  const canvas = document.getElementById('eggPreview');
+  if (navigator.clipboard && window.ClipboardItem) {
+    try {
+      canvas.toBlob(async function(blob) {
+        try {
+          const item = new ClipboardItem({ "image/png": blob });
+          await navigator.clipboard.write([item]);
+          // You can show a success message here if you want
+        } catch (err) {
+          const toast = document.getElementById('copyErrorToast');
+          toast.style.display = 'block';
+          setTimeout(() => { toast.style.display = 'none'; }, 6000);
+        }
+      }, "image/png");
+    } catch (err) {
+      const toast = document.getElementById('copyErrorToast');
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 6000);
+    }
+  } else {
+    const toast = document.getElementById('copyErrorToast');
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 6000);
+  }
+});
+</script>
 </body>
 </html>
