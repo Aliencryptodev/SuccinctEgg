@@ -535,11 +535,11 @@ function renderPreview() {
 
     // Coordenadas del huevo central en la bandeja
       const eggClipArea = {
-      x: 641.2,   //+ dere - izqu
-      y: 470,  //+ baja - sube
-      w: 320,   // + ancho - estrecho
+      x: 645,   //+ dere - izqu
+      y: 465.5,  //+ baja - sube
+      w: 310,   // + ancho - estrecho
       h: 349.4    //+ alto - bajo
-      };
+    };
 
 
     // Calcular escalas para mapear desde zona de trabajo a preview
