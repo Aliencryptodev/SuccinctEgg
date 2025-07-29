@@ -534,12 +534,12 @@ function renderPreview() {
     eggPreviewCtx.drawImage(bandejaImg, 0, 0, previewW, previewH);
 
     // Coordenadas del huevo central en la bandeja
-    const eggClipArea = {
-      x: 641.2,
-      y: 459.6,
-      w: 329.4,
-      h: 329.4
-    };
+      const eggClipArea = {
+      x: 641.2,   //+ dere - izqu
+      y: 470,  //+ baja - sube
+      w: 320,   // + ancho - estrecho
+      h: 349.4    //+ alto - bajo
+      };
 
 
     // Calcular escalas para mapear desde zona de trabajo a preview
