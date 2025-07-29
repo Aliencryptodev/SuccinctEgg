@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="e">
 <head>
   <meta charset="UTF-8">
   <title>Succinct Eggs</title>
@@ -15,35 +15,37 @@
   <div class="main-layout">
     <!-- Editor -->
     <section class="editor-panel">
-      <h2>Egg Editor</h2>
-      <canvas id="editCanvas" width="1000" height="1000"></canvas>
-      <div class="controls">
-        <label for="brushColor">Brush color:</label>
-        <input type="color" id="brushColor" value="#000000">
-        <label for="brushSize">Tamaño:</label>
-        <input type="range" id="brushSize" min="2" max="30" value="6">
-        <button id="clearBtn">Clear</button>
-      </div>
-      <div class="name-section">
-        <div class="stickers-category">
-          <span class="category-title">Upload image</span>
-          <input type="file" id="uploadSticker" accept="image/png, image/jpeg" />
-        </div>
-        <label for="eggName">Name:</label>
-        <input type="text" id="eggName" maxlength="16" placeholder="Egg name">
-        <label for="fontFamily">Fonts:</label>
-        <select id="fontFamily">
-          <option value="Arial">Arial</option>
-          <option value="Comic Sans MS">Comic Sans</option>
-          <option value="Courier New">Courier New</option>
-          <option value="Impact">Impact</option>
-          <option value="Georgia">Georgia</option>
-          <option value="Verdana">Verdana</option>
-          <option value="Tahoma">Tahoma</option>
-        </select>
-        <label for="fontColor">Color:</label>
-        <input type="color" id="fontColor" value="#0000ff">
-      </div>
+    <h2 class="text-rosa">Egg Editor</h2>
+    <canvas id="editCanvas" width="1000" height="1000"></canvas>
+    <div class="controls">
+    <label for="brushColor" class="text-rosa">Brush color:</label>
+    <input type="color" id="brushColor" value="#000000">
+    <label for="brushSize" class="text-rosa">Tamaño:</label>
+    <input type="range" id="brushSize" min="2" max="30" value="6">
+    <button id="clearBtn">Clear</button>
+  </div>
+  <div class="name-section">
+    <div class="stickers-category">
+      <span class="category-title text-rosa">Upload image</span>
+      <input type="file" id="uploadSticker" accept="image/png, image/jpeg" style="display:none">
+      <button id="customBtn" type="button" class="main-btn">Choose file</button>
+      <span id="fileName"></span>
+    </div>
+    <label for="eggName" class="text-rosa">Name:</label>
+    <input type="text" id="eggName" maxlength="16" placeholder="Egg name">
+    <label for="fontFamily" class="text-rosa">Fonts:</label>
+    <select id="fontFamily">
+      <option value="Arial">Arial</option>
+      <option value="Comic Sans MS">Comic Sans</option>
+      <option value="Courier New">Courier New</option>
+      <option value="Impact">Impact</option>
+      <option value="Georgia">Georgia</option>
+      <option value="Verdana">Verdana</option>
+      <option value="Tahoma">Tahoma</option>
+    </select>
+    <label for="fontColor" class="text-rosa">Color:</label>
+    <input type="color" id="fontColor" value="#0000ff">
+     </div>
     </section>
 
     <!-- Stickers -->
