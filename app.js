@@ -13,11 +13,10 @@ const WORK_ZONES = {
   },
   // Porcentajes para la zona de texto (nombre)
   text: {
-    x: 0.21,      // 21% margen izquierdo (igual que design)
-    y: 0.85,      // 85% desde arriba
-    w: 0.58,      // 58% ancho (igual que design)
-    h: 0.08       // 8% altura
-  }
+    x: 0.16,      // 21% margen izquierdo (igual que design)
+    y: 0.922,      // 85% desde arriba
+    w: 0.68,      // 58% ancho (igual que design)
+    h: 0.06       // 8% altura
 };
 
 window.editorBaseImg = window.editorBaseImg || 'assets/eggs/egg_plain.png';
