@@ -58,6 +58,14 @@ const mouthGallery = document.getElementById('mouthGallery');
 const noseGallery = document.getElementById('noseGallery');
 const glassesGallery = document.getElementById('glassesGallery');
 const uploadSticker = document.getElementById('uploadSticker');
+const customBtn = document.getElementById('customBtn');
+const fileName = document.getElementById('fileName');
+
+customBtn.addEventListener('click', () => uploadSticker.click());
+
+uploadSticker.addEventListener('change', function () {
+  fileName.textContent = this.files.length > 0 ? this.files[0].name : "";
+});
 
 const eyesStickers = Array.from({length: 20}, (_, i) => `assets/stickers/eyes${i+1}.png`);
 const mouthStickers = Array.from({length: 20}, (_, i) => `assets/stickers/mouth${i+1}.png`);
@@ -726,4 +734,3 @@ window.addEventListener('DOMContentLoaded', () => {
   redrawEditCanvas();
   renderPreview();
 });
-
