@@ -16,62 +16,70 @@
   <div class="main-layout">
     <!-- Editor -->
     <section class="editor-panel">
-    <h2 class="text-rosa">Egg Editor</h2>
-    <canvas id="editCanvas" width="1000" height="1000"></canvas>
-    <div class="controls">
+  <span class="tape tape-bottom-left"></span>
+  <span class="tape tape-bottom-right"></span>
+  <h2 class="text-rosa">Egg Editor</h2>
+  <canvas id="editCanvas" width="1000" height="1000"></canvas>
+  <div class="controls">
     <label for="brushColor" class="text-rosa">Brush color:</label>
-    <input type="color" id="brushColor" value="#000000">
+    <input type="color" id="brushColor">
     <label for="brushSize" class="text-rosa">Tamaño:</label>
     <input type="range" id="brushSize" min="2" max="30" value="6">
     <button id="clearBtn">Clear</button>
   </div>
   <div class="name-section">
-    <div class="stickers-category">
+    <div class="upload-row">
       <span class="category-title text-rosa">Upload image</span>
-      <input type="file" id="uploadSticker" accept="image/png, image/jpeg" style="display:none">
+      <input type="file" id="uploadSticker" accept="image/png, image/jpeg">
       <button id="customBtn" type="button" class="main-btn">Choose file</button>
       <span id="fileName"></span>
     </div>
-    <label for="eggName" class="text-rosa">Name:</label>
-    <input type="text" id="eggName" maxlength="16" placeholder="Egg name">
-    <label for="fontFamily" class="text-rosa">Fonts:</label>
-    <select id="fontFamily">
-      <option value="Arial">Arial</option>
-      <option value="Comic Sans MS">Comic Sans</option>
-      <option value="Courier New">Courier New</option>
-      <option value="Impact">Impact</option>
-      <option value="Georgia">Georgia</option>
-      <option value="Verdana">Verdana</option>
-      <option value="Tahoma">Tahoma</option>
-    </select>
-    <label for="fontColor" class="text-rosa">Color:</label>
-    <input type="color" id="fontColor" value="#0000ff">
-     </div>
-    </section>
+    <div class="name-fields-row">
+      <label for="eggName" class="text-rosa">Name:</label>
+      <input type="text" id="eggName" maxlength="16" placeholder="Egg name">
+      <label for="fontFamily" class="text-rosa">Fonts:</label>
+      <select id="fontFamily">
+        <option value="Arial">Arial</option>
+        <option value="Comic Sans MS">Comic Sans</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Impact">Impact</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Tahoma">Tahoma</option>
+      </select>
+      <label for="fontColor" class="text-rosa">Color:</label>
+      <input type="color" id="fontColor" value="#0000ff">
+    </div>
+  </div>
+</section>
 
     <!-- Stickers -->
     <section class="stickers-panel">
-      <h3>Stickers</h3>
-      <div class="stickers-category">
-        <span class="category-title">Eyes</span>
-        <div id="eyesGallery" class="stickers-gallery"></div>
-      </div>
-      <div class="stickers-category">
-        <span class="category-title">Mouth</span>
-        <div id="mouthGallery" class="stickers-gallery"></div>
-      </div>
-      <div class="stickers-category">
-        <span class="category-title">Nose</span>
-        <div id="noseGallery" class="stickers-gallery"></div>
-      </div>
-      <div class="stickers-category">
-        <span class="category-title">Glasses</span>
-        <div id="glassesGallery" class="stickers-gallery"></div>
-      </div>
-    </section>
+  <span class="tape tape-bottom-left"></span>
+  <span class="tape tape-bottom-right"></span>
+  <h3>Stickers</h3>
+  <div class="stickers-category">
+    <span class="category-title">Eyes</span>
+    <div id="eyesGallery" class="stickers-gallery"></div>
+  </div>
+  <div class="stickers-category">
+    <span class="category-title">Mouth</span>
+    <div id="mouthGallery" class="stickers-gallery"></div>
+  </div>
+  <div class="stickers-category">
+    <span class="category-title">Nose</span>
+    <div id="noseGallery" class="stickers-gallery"></div>
+  </div>
+  <div class="stickers-category">
+    <span class="category-title">Glasses</span>
+    <div id="glassesGallery" class="stickers-gallery"></div>
+  </div>
+  </section>
 
     <!-- Previsualización y descarga -->
-<section class="preview-panel">
+    <section class="preview-panel">
+  <span class="tape tape-bottom-left"></span>
+  <span class="tape tape-bottom-right"></span>
   <h3>Preview</h3>
   <canvas id="eggPreview" width="1600" height="1120"></canvas>
   <div id="eggColorSelector">
@@ -84,74 +92,74 @@
     <button id="shareTwitterBtn" class="main-btn">Share on Twitter</button>
   </div>
 </section>
-</div>
 
-<!-- Toast/modal for Twitter notification (English) -->
-<div id="twitterToast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#FE11C5; color:#fff; padding:18px 28px; border-radius:10px; font-size:1.1em; box-shadow:0 2px 18px #FE11C599; z-index:9999; font-weight:bold;">
-  <div>
-    <b>Attention!</b><br>
-    To complete your tweet:<br>
-    1️⃣ Download the image using <b>Download PNG</b>.<br>
-    2️⃣ Click on <b>Copy Preview</b> to copy the image.<br>
-    3️⃣ Open Twitter and start your tweet.<br>
-    4️⃣ In your tweet, <b>paste the copied image</b> and <b>upload the downloaded image</b> before posting.<br>
-    <div style="text-align:right; margin-top:12px;">
-      <button id="twitterToastOkBtn" style="background:#fff; color:#FE11C5; border:none; padding:6px 18px; border-radius:8px; font-size:1em; font-weight:bold; cursor:pointer;">OK</button>
+  <!-- Toast/modal for Twitter notification (English) -->
+  <div id="twitterToast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#FE11C5; color:#fff; padding:18px 28px; border-radius:10px; font-size:1.1em; box-shadow:0 2px 18px #FE11C599; z-index:9999; font-weight:bold;">
+    <div>
+      <b>Attention!</b><br>
+      To complete your tweet:<br>
+      1️⃣ Download the image using <b>Download PNG</b>.<br>
+      2️⃣ Click on <b>Copy Preview</b> to copy the image.<br>
+      3️⃣ Open Twitter and start your tweet.<br>
+      4️⃣ In your tweet, <b>paste the copied image</b> and <b>upload the downloaded image</b> before posting.<br>
+      <div style="text-align:right; margin-top:12px;">
+        <button id="twitterToastOkBtn" style="background:#fff; color:#FE11C5; border:none; padding:6px 18px; border-radius:8px; font-size:1em; font-weight:bold; cursor:pointer;">OK</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Toast/modal for copy error (English) -->
-<div id="copyErrorToast" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:18px 28px; border-radius:10px; font-size:1.1em; box-shadow:0 2px 18px #0006; z-index:9999; font-weight:bold;">
-  The image could not be copied automatically. Please right-click on the preview and select 'Copy image' manually.
-</div>
+  <!-- Toast/modal for copy error (English) -->
+  <div id="copyErrorToast" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#222; color:#fff; padding:18px 28px; border-radius:10px; font-size:1.1em; box-shadow:0 2px 18px #0006; z-index:9999; font-weight:bold;">
+    The image could not be copied automatically. Please right-click on the preview and select 'Copy image' manually.
+  </div>
 
-<script src="eggColors.js"></script>
-<script src="eggColorSelector.js"></script>
-<script src="app.js"></script>
-<script>
-// Share on Twitter
-let twitterUrl = "";
+  <!-- Scripts -->
+  <script src="eggColors.js"></script>
+  <script src="eggColorSelector.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Share on Twitter
+    let twitterUrl = "";
 
-document.getElementById('shareTwitterBtn').addEventListener('click', function() {
-  twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    "This is my @SuccinctLabs egg template.\nHey @puselol add me to the collection.\n\nEGG."
-  )}`;
-  document.getElementById('twitterToast').style.display = 'block';
-});
+    document.getElementById('shareTwitterBtn').addEventListener('click', function() {
+      twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        "This is my @SuccinctLabs egg template.\nHey @puselol add me to the collection.\n\nEGG."
+      )}`;
+      document.getElementById('twitterToast').style.display = 'block';
+    });
 
-document.getElementById('twitterToastOkBtn').addEventListener('click', function() {
-  document.getElementById('twitterToast').style.display = 'none';
-  window.open(twitterUrl, '_blank');
-});
+    document.getElementById('twitterToastOkBtn').addEventListener('click', function() {
+      document.getElementById('twitterToast').style.display = 'none';
+      window.open(twitterUrl, '_blank');
+    });
 
-// Copy canvas to clipboard on Preview click
-document.getElementById('previewBtn').addEventListener('click', async function() {
-  const canvas = document.getElementById('eggPreview');
-  if (navigator.clipboard && window.ClipboardItem) {
-    try {
-      canvas.toBlob(async function(blob) {
+    // Copy canvas to clipboard on Preview click
+    document.getElementById('previewBtn').addEventListener('click', async function() {
+      const canvas = document.getElementById('eggPreview');
+      if (navigator.clipboard && window.ClipboardItem) {
         try {
-          const item = new ClipboardItem({ "image/png": blob });
-          await navigator.clipboard.write([item]);
-          // You can show a success message here if you want
+          canvas.toBlob(async function(blob) {
+            try {
+              const item = new ClipboardItem({ "image/png": blob });
+              await navigator.clipboard.write([item]);
+              // Optionally show success message
+            } catch (err) {
+              const toast = document.getElementById('copyErrorToast');
+              toast.style.display = 'block';
+              setTimeout(() => { toast.style.display = 'none'; }, 6000);
+            }
+          }, "image/png");
         } catch (err) {
           const toast = document.getElementById('copyErrorToast');
           toast.style.display = 'block';
           setTimeout(() => { toast.style.display = 'none'; }, 6000);
         }
-      }, "image/png");
-    } catch (err) {
-      const toast = document.getElementById('copyErrorToast');
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 6000);
-    }
-  } else {
-    const toast = document.getElementById('copyErrorToast');
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 6000);
-  }
-});
-</script>
+      } else {
+        const toast = document.getElementById('copyErrorToast');
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 6000);
+      }
+    });
+  </script>
 </body>
 </html>
