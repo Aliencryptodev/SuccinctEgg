@@ -533,6 +533,125 @@ clearBtn.addEventListener('click', () => {
   renderPreview();
 });
 
+// --- SOPORTE TOUCH para stickers y dibujo en móvil ---
+function getTouchPos(canvas, touchEvent) {
+  const rect = canvas.getBoundingClientRect();
+  const touch = touchEvent.touches[0] || touchEvent.changedTouches[0];
+  return [
+    (touch.clientX - rect.left) * canvas.width / rect.width,
+    (touch.clientY - rect.top) * canvas.height / rect.height
+  ];
+}
+
+let touchDrawing = false;
+let touchResizing = false;
+
+editCanvas.addEventListener('touchstart', function(e) {
+  if (e.cancelable) e.preventDefault();
+  const [x, y] = getTouchPos(editCanvas, e);
+
+  if (!isPointInWorkZone(x, y)) return;
+
+  let found = false;
+  for (let i = placedStickers.length - 1; i >= 0; i--) {
+    const st = placedStickers[i];
+    if (i === selectedStickerIndex) {
+      if (pointInRect(x, y, getHandleRect(st))) {
+        resizing = true;
+        touchResizing = true;
+        dragOffsetX = x - (st.x + st.w);
+        dragOffsetY = y - (st.y + st.h);
+        found = true;
+        break;
+      }
+      if (pointInRect(x, y, getCloseRect(st))) {
+        placedStickers.splice(i, 1);
+        selectedStickerIndex = -1;
+        redrawEditCanvas();
+        renderPreview();
+        found = true;
+        break;
+      }
+    }
+    if (pointInSticker(x, y, st)) {
+      selectedStickerIndex = i;
+      dragOffsetX = x - st.x;
+      dragOffsetY = y - st.y;
+      resizing = false;
+      touchResizing = false;
+      found = true;
+      redrawEditCanvas();
+      break;
+    }
+  }
+  if (!found) {
+    selectedStickerIndex = -1;
+    redrawEditCanvas();
+    // Empezar a dibujar (pincel)
+    drawing = true;
+    touchDrawing = true;
+    [lastX, lastY] = [x, y];
+  }
+});
+
+editCanvas.addEventListener('touchmove', function(e) {
+  if (e.cancelable) e.preventDefault();
+  const [x, y] = getTouchPos(editCanvas, e);
+
+  if (resizing || touchResizing) {
+    if (selectedStickerIndex !== -1) {
+      const st = placedStickers[selectedStickerIndex];
+      let newW = x - st.x - dragOffsetX;
+      let newH = y - st.y - dragOffsetY;
+      newW = Math.max(40, newW);
+      newH = Math.max(40, newH);
+      const zones = getWorkZones(editW, editH);
+      const designZone = zones.design;
+      newW = Math.min(designZone.x + designZone.w - st.x, newW);
+      newH = Math.min(designZone.y + designZone.h - st.y, newH);
+      st.w = newW;
+      st.h = newH;
+      redrawEditCanvas();
+      renderPreview();
+    }
+    return;
+  }
+
+  if (drawing || touchDrawing) {
+    if (isPointInWorkZone(x, y) && isPointInWorkZone(lastX, lastY)) {
+      drawCtx.strokeStyle = brushColor.value;
+      drawCtx.lineWidth = brushSize.value;
+      drawCtx.lineCap = "round";
+      drawCtx.lineJoin = "round";
+      drawCtx.beginPath();
+      drawCtx.moveTo(lastX, lastY);
+      drawCtx.lineTo(x, y);
+      drawCtx.stroke();
+      redrawEditCanvas();
+      renderPreview();
+    }
+    [lastX, lastY] = [x, y];
+    return;
+  }
+
+  if (selectedStickerIndex !== -1 && !resizing && !touchResizing) {
+    const st = placedStickers[selectedStickerIndex];
+    const newX = x - dragOffsetX;
+    const newY = y - dragOffsetY;
+    [st.x, st.y] = constrainToWorkZone(newX, newY, st.w, st.h);
+    redrawEditCanvas();
+    renderPreview();
+  }
+});
+
+editCanvas.addEventListener('touchend', function(e) {
+  if (e.cancelable) e.preventDefault();
+  resizing = false;
+  touchResizing = false;
+  drawing = false;
+  touchDrawing = false;
+});
+
 // ✅ PREVISUALIZACIÓN: renderPreview con límites
 function renderPreview() {
   const bandejaImg = new window.Image();
