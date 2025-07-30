@@ -67,9 +67,9 @@ uploadSticker.addEventListener('change', function () {
   fileName.textContent = this.files.length > 0 ? this.files[0].name : "";
 });
 
-const eyesStickers = Array.from({length: 20}, (_, i) => `assets/stickers/eyes${i+1}.png`);
-const mouthStickers = Array.from({length: 20}, (_, i) => `assets/stickers/mouth${i+1}.png`);
-const noseStickers = Array.from({length: 20}, (_, i) => `assets/stickers/nose${i+1}.png`);
+const eyesStickers = Array.from({length: 30}, (_, i) => `assets/stickers/eyes${i+1}.png`);
+const mouthStickers = Array.from({length: 30}, (_, i) => `assets/stickers/mouth${i+1}.png`);
+const noseStickers = Array.from({length: 30}, (_, i) => `assets/stickers/nose${i+1}.png`);
 const glassesStickers = Array.from({length: 20}, (_, i) => `assets/stickers/glasses${i+1}.png`);
 
 let placedStickers = [];
